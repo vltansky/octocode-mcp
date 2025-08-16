@@ -1,340 +1,174 @@
 /**
- * Clean Semantic Algorithm - Converts JSON to natural language format
+ * Clean Semantic Algorithm - Converts JSON objects and arrays to natural language format
  *
- * Step 1: Remove all JSON syntax (quotes, brackets, braces, commas)
- * Step 2: Create natural hierarchy with simple indentation
- * Step 3: Transform arrays into natural language patterns
- * Step 4: Use semantic labels (File:, Size:, Contents:, etc.)
+ * ONLY accepts JSON objects, arrays, or valid JSON strings that parse to objects/arrays.
+ * Does NOT accept primitive values (strings, numbers, booleans) directly.
  *
- * @param data - The JSON data to convert (object, array, or primitive).
- * @param indentation - The current indentation level for formatting.
- * @param maxDepth - Maximum recursion depth to prevent stack overflow.
- * @param visited - Set of visited objects to detect circular references.
- * @param parentKey - The parent key for context-aware labeling.
- * @returns The formatted string in natural language.
+ * Step 1: Validate input is JSON object/array (parse JSON strings if needed)
+ * Step 2: Remove all JSON syntax (quotes, brackets, braces, commas)
+ * Step 3: Create natural hierarchy with simple indentation
+ * Step 4: Transform arrays into natural language patterns with bullets
+ * Step 5: Keep original key names without transformation
+ * Step 6: Enhanced scalar formatting using built-in functions
+ *
+ * @param data - JSON object, array, or valid JSON string that parses to object/array
+ * @param options - Optional configuration object
+ * @param options.maxDepth - Maximum recursion depth (default: Infinity - no limit)
+ * @param options.maxLength - Maximum string length before truncation (default: Infinity - no limit)
+ * @param options.maxArrayItems - Maximum array items to display (default: Infinity - no limit)
+ * @returns The formatted string in natural language
+ * @throws Error if data is not a JSON object, array, or valid JSON string
  */
 export function jsonToLLMString(
   data: unknown,
-  indentation: number = 0,
-  maxDepth: number = 10,
-  visited: Set<unknown> | null = null,
-  parentKey: string = '',
-  maxLength: number = 1000,
-  maxArrayItems: number = 50
+  options: {
+    maxDepth?: number;
+    maxLength?: number;
+    maxArrayItems?: number;
+  } = {}
 ): string {
-  // Initialize visited set for circular reference detection
-  if (visited === null) {
-    visited = new Set();
+  const {
+    maxDepth = Infinity,
+    maxLength = Infinity,
+    maxArrayItems = Infinity,
+  } = options;
 
-    // Handle JSON string parsing at the beginning (only at root level)
+  // Validate that we only accept JSON objects, arrays, or valid JSON strings
+  if (!Array.isArray(data) && (typeof data !== 'object' || data === null)) {
+    // Check if it's a JSON string that can be parsed
     if (typeof data === 'string') {
       try {
         const parsed = JSON.parse(data);
-        // If successfully parsed, use parsed data and add transformation indicator
-        const result = jsonToLLMString(
-          parsed,
-          indentation,
-          maxDepth,
-          new Set(),
-          parentKey,
-          maxLength,
-          maxArrayItems
-        );
-        return `[Transformed from JSON]\n${result}`;
+        return `[Transformed from JSON]\n${convertInternal(parsed, 0, new Set())}`;
       } catch {
-        // If parsing fails, treat as regular string with truncation logic
-        if (data.length > maxLength) {
-          return data.substring(0, maxLength) + '... [truncated]';
-        }
-        return data;
+        throw new Error(
+          'jsonToLLMString should only handle JSON objects or arrays, not primitive strings'
+        );
       }
     }
+    throw new Error(
+      'jsonToLLMString should only handle JSON objects or arrays, not primitive values'
+    );
   }
 
-  // Prevent infinite recursion
-  if (indentation > maxDepth) {
-    return '[Max depth reached]';
-  }
-
-  // Detect circular references
-  if (typeof data === 'object' && data !== null) {
-    if (visited.has(data)) {
-      return '[Circular reference]';
+  // Internal recursive function with all the complexity hidden from user
+  function convertInternal(
+    data: unknown,
+    depth: number = 0,
+    visited: Set<unknown> = new Set()
+  ): string {
+    // Prevent infinite recursion
+    if (depth > maxDepth) {
+      return '[Max depth reached]';
     }
-    visited.add(data);
-  }
 
-  // Define indentation string (2-4 spaces per level)
-  const indent = ' '.repeat(indentation * 2);
+    // Handle circular references
+    if (typeof data === 'object' && data !== null) {
+      if (visited.has(data)) {
+        return '[Circular reference]';
+      }
+      visited.add(data);
+    }
 
-  // Get semantic label based on key
-  const getSemanticLabel = (key: string): string => {
-    const labelMap: Record<string, string> = {
-      // File/Content related
-      path: 'File',
-      size: 'Size',
-      data: 'Contents',
-      content: 'Content',
-      text: 'Text',
-      body: 'Body',
-      message: 'Message',
+    const indent = '  '.repeat(depth);
 
-      // Collection related
-      items: 'Items',
-      children: 'Subitems',
-      files: 'Files',
-      results: 'Results',
-      matches: 'Matches',
+    // Handle primitives
+    if (data === null) return 'null';
+    if (data === undefined) return 'undefined';
+    if (typeof data === 'boolean') return data ? 'yes' : 'no';
+    if (typeof data === 'number') return data.toLocaleString();
+    if (typeof data === 'bigint') return data.toString() + 'n';
 
-      // Metadata
-      type: 'Type',
-      name: 'Name',
-      value: 'Value',
-      description: 'Description',
-      title: 'Title',
-      summary: 'Summary',
-
-      // GitHub specific
-      owner: 'Owner',
-      repo: 'Repository',
-      branch: 'Branch',
-      commit: 'Commit',
-      sha: 'SHA',
-      author: 'Author',
-      created: 'Created',
-      updated: 'Updated',
-      pushed: 'Last Pushed',
-      stars: 'Stars',
-      forks: 'Forks',
-      language: 'Language',
-      topics: 'Topics',
-      license: 'License',
-
-      // NPM specific
-      version: 'Version',
-      package: 'Package',
-      dependencies: 'Dependencies',
-      devdependencies: 'Dev Dependencies',
-      scripts: 'Scripts',
-      engines: 'Engines',
-      keywords: 'Keywords',
-      homepage: 'Homepage',
-      repository: 'Repository',
-      bugs: 'Bugs',
-      maintainers: 'Maintainers',
-
-      // Common data fields
-      id: 'ID',
-      url: 'URL',
-      link: 'Link',
-      email: 'Email',
-      phone: 'Phone',
-      address: 'Address',
-      city: 'City',
-      country: 'Country',
-      date: 'Date',
-      time: 'Time',
-      timestamp: 'Timestamp',
-
-      // Status/State
-      status: 'Status',
-      state: 'State',
-      active: 'Active',
-      enabled: 'Enabled',
-      visible: 'Visible',
-      public: 'Public',
-      private: 'Private',
-
-      // Counts/Statistics
-      count: 'Count',
-      total: 'Total',
-      number: 'Number',
-      amount: 'Amount',
-      quantity: 'Quantity',
-      score: 'Score',
-      rating: 'Rating',
-
-      // Error/Response related
-      error: 'Error',
-      warning: 'Warning',
-      info: 'Info',
-      debug: 'Debug',
-      trace: 'Trace',
-      stack: 'Stack',
-    };
-    const lowerKey = key.toLowerCase();
-    return labelMap[lowerKey] || key.charAt(0).toUpperCase() + key.slice(1);
-  };
-
-  // Handle primitives - return without quotes or additional formatting
-  if (data === null || typeof data !== 'object') {
-    // Remove quotes from strings for natural language
     if (typeof data === 'string') {
-      // Truncate long strings for token efficiency
-      if (data.length > maxLength) {
-        return data.substring(0, maxLength) + '... [truncated]';
+      // Use built-in Date constructor for date detection
+      if (data.length > 8 && !isNaN(Date.parse(data))) {
+        try {
+          const date = new Date(data);
+          // Only format if it's a valid date that looks like ISO format
+          if (data.includes('T') || data.includes('-')) {
+            return date.toLocaleString(); // Dates are formatted, no quotes needed
+          }
+        } catch {
+          // Not a valid date, continue
+        }
       }
-      return data;
-    }
-    // Handle booleans consistently with "yes"/"no"
-    if (typeof data === 'boolean') {
-      return data ? 'yes' : 'no';
-    }
-    // Handle null consistently with "none"
-    if (data === null) {
-      return 'none';
-    }
-    return String(data);
-  }
 
-  // Handle objects
-  if (typeof data === 'object') {
-    // Handle special object types first
+      // Truncate long strings only if maxLength is finite, but keep quotes for LLM clarity
+      if (isFinite(maxLength) && data.length > maxLength) {
+        return `"${data.substring(0, maxLength)}... [truncated]"`;
+      }
+      // Keep quotes around strings for better LLM understanding
+      return `"${data}"`;
+    }
+
+    // Handle special objects using built-in instanceof checks
     if (data instanceof Date) {
-      return data.toISOString();
+      return data.toLocaleString();
     }
-
     if (data instanceof RegExp) {
       return data.toString();
     }
-
-    if (typeof data === 'function') {
-      return data.toString();
+    if (data instanceof Error) {
+      return `Error: ${data.name}: ${data.message}`;
     }
 
-    // Handle arrays (moved here to avoid conflicts)
+    // Handle arrays
     if (Array.isArray(data)) {
-      // Handle empty arrays
-      if (data.length === 0) {
-        return 'empty';
-      }
+      if (data.length === 0) return 'empty';
 
-      // Limit array items for token efficiency
-      const displayItems = data.slice(0, maxArrayItems);
-      const hasMore = data.length > maxArrayItems;
+      // Limit array items only if maxArrayItems is finite
+      const displayItems = isFinite(maxArrayItems)
+        ? data.slice(0, maxArrayItems)
+        : data;
+      const hasMore = isFinite(maxArrayItems) && data.length > maxArrayItems;
 
-      // Check if it's an array of simple values or objects
-      const isSimpleArray = displayItems.every(
+      // Simple arrays (primitives only)
+      const isSimple = displayItems.every(
         item => typeof item !== 'object' || item === null
       );
 
-      if (isSimpleArray) {
-        // Simple arrays: LIST format with comma-separated items
-        const result = displayItems
-          .map(item => {
-            if (typeof item === 'string') return item;
-            if (typeof item === 'boolean') return item ? 'yes' : 'no';
-            return String(item);
-          })
+      if (isSimple) {
+        const items = displayItems
+          .map(item => convertInternal(item, 0, new Set()))
           .join(', ');
-
-        // Add truncation notice if needed
-        const listContent = hasMore
-          ? `${result}... [${data.length - maxArrayItems} more items]`
-          : result;
-
-        return `LIST: ${listContent}`;
+        const result = hasMore
+          ? `${items}... [${data.length - maxArrayItems} more items]`
+          : items;
+        return `LIST: ${result}`;
       } else {
-        // Arrays of objects: use numbered items or natural flow
-        const result = displayItems
-          .map((item, index) => {
-            // For objects in arrays, format as natural items
-            const itemStr = jsonToLLMString(
-              item,
-              indentation + 1,
-              maxDepth,
-              visited,
-              parentKey,
-              maxLength,
-              maxArrayItems
-            );
-            // If it's a multi-line item, add proper indentation
-            if (itemStr.includes('\n')) {
-              return `${indent}Item ${index + 1}:\n${itemStr}`;
-            }
-            return `${indent}Item ${index + 1}: ${itemStr}`;
-          })
-          .join('\n');
-
-        // Add truncation notice if needed
-        return hasMore
-          ? `${result}\n${indent}... [${data.length - maxArrayItems} more items]`
-          : result;
+        // Complex arrays (objects) - use ITEMS: format to reduce tokens
+        const items = displayItems
+          .map(item => convertInternal(item, depth + 1, visited))
+          .join(', ');
+        const result = hasMore
+          ? `${items}, ... [${data.length - maxArrayItems} more items]`
+          : items;
+        return `ITEMS: ${result}`;
       }
     }
 
-    const keys = Object.keys(data as Record<string, unknown>);
+    // Handle objects
+    if (typeof data === 'object' && data !== null) {
+      const keys = Object.keys(data);
+      if (keys.length === 0) return 'empty';
 
-    // Handle empty objects
-    if (keys.length === 0) {
-      return 'empty';
-    }
+      const lines = keys.map(key => {
+        const value = (data as Record<string, unknown>)[key];
+        const valueStr = convertInternal(value, depth + 1, visited);
 
-    const lines = keys.map(key => {
-      const value = (data as Record<string, unknown>)[key];
-      const semanticLabel = getSemanticLabel(key);
-
-      // Handle special object types in object properties
-      if (value instanceof Date) {
-        return `${indent}${semanticLabel}: ${value.toISOString()}`;
-      }
-
-      if (value instanceof RegExp) {
-        return `${indent}${semanticLabel}: ${value.toString()}`;
-      }
-
-      if (typeof value === 'function') {
-        return `${indent}${semanticLabel}: ${value.toString()}`;
-      }
-
-      // Check if the value is an object or array to handle nested formatting
-      if (typeof value === 'object' && value !== null) {
-        // Handle empty objects/arrays
-        if (
-          (Array.isArray(value) && value.length === 0) ||
-          (typeof value === 'object' && Object.keys(value).length === 0)
-        ) {
-          return `${indent}${semanticLabel}: empty`;
-        }
-
-        // For nested structures, use semantic hierarchy with colons
-        const nestedContent = jsonToLLMString(
-          value,
-          indentation + 1,
-          maxDepth,
-          visited,
-          key,
-          maxLength,
-          maxArrayItems
-        );
-
-        // If the nested content is a single line, keep it inline
-        if (!nestedContent.includes('\n')) {
-          return `${indent}${semanticLabel}: ${nestedContent}`;
-        }
-
-        // For multi-line content, add newline for clarity
-        return `${indent}${semanticLabel}:\n${nestedContent}`;
-      } else {
-        // Handle primitive values - clean natural language
-        let displayValue: string;
-        if (typeof value === 'string') {
-          // Remove quotes, clean up values
-          displayValue = value;
-        } else if (value === null) {
-          displayValue = 'none';
-        } else if (typeof value === 'boolean') {
-          displayValue = value ? 'yes' : 'no';
+        if (valueStr.includes('\n')) {
+          return `${indent}${key}:\n${valueStr}`;
         } else {
-          displayValue = String(value);
+          return `${indent}${key}: ${valueStr}`;
         }
+      });
 
-        return `${indent}${semanticLabel}: ${displayValue}`;
-      }
-    });
-    return lines.join('\n');
+      return lines.join('\n');
+    }
+
+    return String(data);
   }
 
-  // Fallback for unexpected types
-  return String(data);
+  // Call the internal function with the data
+  return convertInternal(data);
 }

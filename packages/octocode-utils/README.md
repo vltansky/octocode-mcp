@@ -51,44 +51,44 @@ const data = {
 
 console.log(jsonToLLMString(data));
 // Output:
-// Name: John
-// Age: 30
-// Active: yes
-// Roles: admin, user
+// name: "John"
+// age: 30
+// active: yes
+// roles: LIST: "admin", "user"
 ```
 
 #### Features
 
 - **Clean Semantic Algorithm**: Removes JSON syntax (quotes, brackets, braces, commas)
-- **Natural Hierarchy**: Creates simple indentation-based structure
-- **Array Transformation**: Converts arrays into natural language patterns
-- **Semantic Labels**: Uses meaningful labels (File:, Size:, Contents:, etc.)
-- **Token Efficiency**: Optimized for LLM token consumption
+- **Natural Hierarchy**: Creates simple indentation-based structure  
+- **Ultra-Compact Arrays**: `ITEMS:` format eliminates redundant "Item N:" prefixes
+- **Raw Keys Preserved**: Keys kept as-is without transformation for simplicity
+- **String Quotes**: Preserves quotes around strings for LLM clarity
+- **Token Efficiency**: 12.9% average reduction in real-world tests
 - **Circular Reference Detection**: Prevents infinite recursion
-- **Performance Optimized**: Handles large datasets efficiently
+- **Input Validation**: Only accepts objects/arrays, rejects primitives for type safety
 
 #### API
 
 ```typescript
 function jsonToLLMString(
   data: unknown,
-  indentation?: number,
-  maxDepth?: number,
-  visited?: Set<unknown> | null,
-  parentKey?: string,
-  maxLength?: number,
-  maxArrayItems?: number
+  options?: {
+    maxDepth?: number;
+    maxLength?: number;
+    maxArrayItems?: number;
+  }
 ): string
 ```
 
 Parameters:
-- `data`: The JSON data to convert
-- `indentation`: Current indentation level (default: 0)
-- `maxDepth`: Maximum recursion depth (default: 10)
-- `visited`: Set for circular reference detection (default: null)
-- `parentKey`: Parent key for context-aware labeling (default: '')
-- `maxLength`: Maximum string length before truncation (default: 1000)
-- `maxArrayItems`: Maximum array items to display (default: 50)
+- `data`: JSON object, array, or valid JSON string that parses to object/array
+- `options`: Optional configuration object
+  - `maxDepth`: Maximum recursion depth (default: Infinity - no limit)
+  - `maxLength`: Maximum string length before truncation (default: Infinity - no limit)
+  - `maxArrayItems`: Maximum array items to display (default: Infinity - no limit)
+
+**Throws:** Error if data is not a JSON object, array, or valid JSON string
 
 ### minifyContent
 
@@ -196,17 +196,18 @@ Our comprehensive benchmarks using GPT-4 tokenizer demonstrate significant effic
 
 | File Type | Original Tokens | LLM Format Tokens | Reduction | Cost Savings |
 |-----------|-----------------|-------------------|-----------|--------------|
-| GitHub Repository Search | 2,742 | 2,365 | **13.7%** | $0.0113 |
-| NPM Package Info | 2,722 | 2,308 | **15.2%** | $0.0124 |
-| GitHub Code Search | 3,915 | 3,289 | **16.0%** | $0.0188 |
-| GitHub Pull Request | 3,933 | 3,353 | **14.7%** | $0.0174 |
-| Mixed API Responses | 3,689 | 3,137 | **15.0%** | $0.0166 |
+| GitHub Repository Search | 2,742 | 2,508 | **8.5%** | $0.0070 |
+| NPM Package Info | 2,722 | 2,378 | **12.6%** | $0.0103 |
+| GitHub Code Search | 3,915 | 3,377 | **13.7%** | $0.0161 |
+| GitHub Pull Request | 3,933 | 3,438 | **12.6%** | $0.0148 |
+| Mixed API Responses | 3,689 | 3,215 | **12.8%** | $0.0142 |
+| GitHub Fetch Content | 3,004 | 2,504 | **16.6%** | $0.0150 |
 
 **📈 Aggregate Results:**
-- **15.0% average token reduction** across real-world JSON datasets
-- **2,549 tokens saved** per batch (17K→14.5K tokens)
-- **$0.0765 cost savings** per batch with GPT-4 pricing
-- **⚡ 10.4M tokens/second** processing speed
+- **12.9% average token reduction** across real-world JSON datasets
+- **2,585 tokens saved** per batch (20K→17.4K tokens)
+- **$0.0776 cost savings** per batch with GPT-4 pricing
+- **⚡ 1.62M tokens/second** processing speed
 
 *Run `examples/comprehensive-demo.ts` to reproduce these benchmarks*
 
@@ -226,22 +227,22 @@ Our comprehensive benchmarks using GPT-4 tokenizer demonstrate significant effic
 **✅ Remove Heavy JSON Syntax; Keep Salient Structure**
 - Reduces token overhead and focuses the model on semantics rather than punctuation
 - Consistent with evidence that alternative formats and compact linearizations improve efficiency
-- **Measured impact:** 15.0% average token reduction
+- **Measured impact:** 12.9% average token reduction
 
-**✅ Semantic Labels (`File:`, `Repository:`, `Owner:`)**
-- Mirrors the "simple English sentence" option in scientific information extraction
-- Matches key-value styles proven effective in structured prompting
-- **Example transformation:** `"repo": "octocode"` → `Repository: octocode`
+**✅ Raw Keys Preserved (`repo:`, `name:`, `active:`)**
+- Maintains original key names without transformation for clean, simple implementation
+- Reduces complexity while preserving semantic meaning
+- **Example transformation:** `"repo": "octocode"` → `repo: "octocode"`
 
 **✅ Indentation/Hierarchy and Controlled Truncation**
 - Matches the "reading-then-reasoning" principle (structured for reading; capped for context)
 - Aligns with efficiency findings for non-NL/compact formats
-- **Performance:** Processes 10.4M tokens/second with depth limiting
+- **Performance:** Processes 1.62M tokens/second with depth limiting
 
-**✅ Array Handling (`LIST:` for primitives; numbered items for objects)**
+**✅ Ultra-Compact Array Handling (`LIST:` for primitives; `ITEMS:` for objects)**
+- Eliminates redundant "Item N:" prefixes for maximum token efficiency
 - Provides predictable, compressible patterns easy for models to scan
-- Works well for both human and machine readers per format selection studies
-- **Example:** `["react", "typescript"]` → `LIST: react, typescript`
+- **Examples:** `["react", "typescript"]` → `LIST: "react", "typescript"` and objects → `ITEMS: obj1, obj2`
 
 ### 🔄 **Practical Integration Patterns**
 
@@ -251,12 +252,11 @@ Our comprehensive benchmarks using GPT-4 tokenizer demonstrate significant effic
 // Before: Raw JSON with syntax noise
 {"users":[{"name":"Alice","active":true}],"total":1}
 
-// After: Semantic naturalization  
-Users:
-  Item 1:
-    Name: Alice
-    Active: yes
-Total: 1
+// After: Ultra-compact naturalization  
+users:
+ITEMS:     name: "Alice"
+    active: yes
+total: 1
 ```
 
 **Output Side:** When you need guaranteed structure back (API calls, tool arguments), use constrained decoding with FSM/grammar libraries—research shows this can be faster than unconstrained generation.

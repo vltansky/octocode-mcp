@@ -10,6 +10,10 @@ _scripts
 
 coverage
 
+# Examples output files
+packages/octocode-utils/examples/*_output.txt
+packages/octocode-utils/examples/stats.json
+
 .env
 .cursor
 .context

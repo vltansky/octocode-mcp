@@ -3,28 +3,46 @@ import { jsonToLLMString } from '../src/jsonToLLMString';
 
 describe('jsonToLLMString', () => {
   describe('Primitive Values', () => {
-    it('should handle strings without quotes', () => {
-      expect(jsonToLLMString('hello world')).toBe('hello world');
-      expect(jsonToLLMString('')).toBe('');
+    it('should reject primitive strings with error', () => {
+      expect(() => jsonToLLMString('hello world')).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive strings'
+      );
+      expect(() => jsonToLLMString('')).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive strings'
+      );
     });
 
-    it('should handle numbers', () => {
-      expect(jsonToLLMString(42)).toBe('42');
-      expect(jsonToLLMString(0)).toBe('0');
-      expect(jsonToLLMString(-1.5)).toBe('-1.5');
+    it('should reject primitive numbers with error', () => {
+      expect(() => jsonToLLMString(42)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive values'
+      );
+      expect(() => jsonToLLMString(0)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive values'
+      );
+      expect(() => jsonToLLMString(-1.5)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive values'
+      );
     });
 
-    it('should handle booleans', () => {
-      expect(jsonToLLMString(true)).toBe('yes');
-      expect(jsonToLLMString(false)).toBe('no');
+    it('should reject primitive booleans with error', () => {
+      expect(() => jsonToLLMString(true)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive values'
+      );
+      expect(() => jsonToLLMString(false)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive values'
+      );
     });
 
-    it('should handle null', () => {
-      expect(jsonToLLMString(null)).toBe('none');
+    it('should reject null with error', () => {
+      expect(() => jsonToLLMString(null)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive values'
+      );
     });
 
-    it('should handle undefined', () => {
-      expect(jsonToLLMString(undefined)).toBe('undefined');
+    it('should reject undefined with error', () => {
+      expect(() => jsonToLLMString(undefined)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive values'
+      );
     });
   });
 
@@ -35,13 +53,13 @@ describe('jsonToLLMString', () => {
 
     it('should handle simple arrays', () => {
       expect(jsonToLLMString([1, 2, 3])).toBe('LIST: 1, 2, 3');
-      expect(jsonToLLMString(['a', 'b', 'c'])).toBe('LIST: a, b, c');
+      expect(jsonToLLMString(['a', 'b', 'c'])).toBe('LIST: "a", "b", "c"');
       expect(jsonToLLMString([true, false, null])).toBe('LIST: yes, no, null');
     });
 
     it('should handle mixed primitive arrays', () => {
       expect(jsonToLLMString([1, 'hello', true, null])).toBe(
-        'LIST: 1, hello, yes, null'
+        'LIST: 1, "hello", yes, null'
       );
     });
 
@@ -50,12 +68,9 @@ describe('jsonToLLMString', () => {
         { name: 'John', age: 30 },
         { name: 'Jane', age: 25 },
       ];
-      const expected = `Item 1:
-  Name: John
-  Age: 30
-Item 2:
-  Name: Jane
-  Age: 25`;
+      const expected = `ITEMS:   name: "John"
+  age: 30,   name: "Jane"
+  age: 25`;
       expect(jsonToLLMString(input)).toBe(expected);
     });
 
@@ -64,9 +79,20 @@ Item 2:
         [1, 2],
         [3, 4],
       ];
-      const expected = `Item 1: LIST: 1, 2
-Item 2: LIST: 3, 4`;
+      const expected = `ITEMS: LIST: 1, 2, LIST: 3, 4`;
       expect(jsonToLLMString(input)).toBe(expected);
+    });
+
+    it('should handle mixed array with multiple object types', () => {
+      const input = [1, 100, {}, 'ddd', { a: 'kkk' }];
+      const result = jsonToLLMString(input);
+
+      expect(result).toContain('ITEMS:');
+      expect(result).toContain('1,');
+      expect(result).toContain('100,');
+      expect(result).toContain('empty,');
+      expect(result).toContain('"ddd",');
+      expect(result).toContain('a: "kkk"');
     });
   });
 
@@ -77,17 +103,17 @@ Item 2: LIST: 3, 4`;
 
     it('should handle simple objects', () => {
       const input = { name: 'John', age: 30, active: true };
-      const expected = `Name: John
-Age: 30
-Active: yes`;
+      const expected = `name: "John"
+age: 30
+active: yes`;
       expect(jsonToLLMString(input)).toBe(expected);
     });
 
     it('should handle semantic labels', () => {
       const input = { path: '/file.txt', size: 1024, data: 'content' };
-      const expected = `File: /file.txt
-Size: 1024
-Contents: content`;
+      const expected = `path: "/file.txt"
+size: 1,024
+data: "content"`;
       expect(jsonToLLMString(input)).toBe(expected);
     });
 
@@ -101,19 +127,19 @@ Contents: content`;
           },
         },
       };
-      const expected = `User:
-  Name: John
-  Address:
-    City: New York
-    Country: USA`;
+      const expected = `user:
+  name: "John"
+  address:
+    city: "New York"
+    country: "USA"`;
       expect(jsonToLLMString(input)).toBe(expected);
     });
 
     it('should handle objects with null values', () => {
       const input = { name: 'John', email: null, phone: undefined };
-      const expected = `Name: John
-Email: none
-Phone: undefined`;
+      const expected = `name: "John"
+email: null
+phone: undefined`;
       expect(jsonToLLMString(input)).toBe(expected);
     });
   });
@@ -143,7 +169,9 @@ Phone: undefined`;
           },
         },
       };
-      expect(jsonToLLMString(deepObj, 0, 5)).toContain('[Max depth reached]');
+      expect(jsonToLLMString(deepObj, { maxDepth: 5 })).toContain(
+        '[Max depth reached]'
+      );
     });
 
     it('should handle functions', () => {
@@ -183,23 +211,23 @@ Phone: undefined`;
       };
 
       const result = jsonToLLMString(input);
-      expect(result).toContain('Users:');
-      expect(result).toContain('Settings:');
-      expect(result).toContain('Roles: LIST: admin, user');
-      expect(result).toContain('Theme: dark');
-      expect(result).toContain('Notifications: yes');
+      expect(result).toContain('users:');
+      expect(result).toContain('settings:');
+      expect(result).toContain('roles: LIST: "admin", "user"');
+      expect(result).toContain('theme: "dark"');
+      expect(result).toContain('notifications: yes');
     });
 
     it('should handle arrays with mixed types', () => {
       const input = ['string', 42, { name: 'object' }, [1, 2, 3], null, true];
 
       const result = jsonToLLMString(input);
-      expect(result).toContain('Item 1: string');
-      expect(result).toContain('Item 2: 42');
-      expect(result).toContain('Item');
-      expect(result).toContain('Name: object');
+      expect(result).toContain('ITEMS:');
+      expect(result).toContain('"string",');
+      expect(result).toContain('42,');
+      expect(result).toContain('name: "object"');
       expect(result).toContain('LIST: 1, 2, 3');
-      expect(result).toContain('none');
+      expect(result).toContain('null');
       expect(result).toContain('yes');
     });
   });
@@ -211,10 +239,10 @@ Phone: undefined`;
         name: `Item ${i}`,
       }));
       const start = performance.now();
-      const result = jsonToLLMString(largeArray);
+      const result = jsonToLLMString(largeArray, { maxArrayItems: 50 });
       const end = performance.now();
 
-      expect(result).toContain('Item 1:');
+      expect(result).toContain('ITEMS:');
       expect(result).toContain('... [950 more items]');
       expect(end - start).toBeLessThan(1000); // Should complete within 1 second
     });
@@ -245,16 +273,16 @@ Phone: undefined`;
       };
 
       const result = jsonToLLMString(input);
-      expect(result).toContain('File: /file.txt');
-      expect(result).toContain('Size: 1024');
-      expect(result).toContain('Contents: content');
-      expect(result).toContain('Items: LIST: a, b');
-      expect(result).toContain('Type: file');
-      expect(result).toContain('Name: test');
-      expect(result).toContain('Value: 42');
-      expect(result).toContain('Content: text');
-      expect(result).toContain('Description: A test file');
-      expect(result).toContain('Subitems: LIST: child1, child2');
+      expect(result).toContain('path: "/file.txt"');
+      expect(result).toContain('size: 1,024');
+      expect(result).toContain('data: "content"');
+      expect(result).toContain('items: LIST: "a", "b"');
+      expect(result).toContain('type: "file"');
+      expect(result).toContain('name: "test"');
+      expect(result).toContain('value: 42');
+      expect(result).toContain('content: "text"');
+      expect(result).toContain('description: "A test file"');
+      expect(result).toContain('children: LIST: "child1", "child2"');
     });
 
     it('should use GitHub-specific semantic labels', () => {
@@ -276,20 +304,20 @@ Phone: undefined`;
       };
 
       const result = jsonToLLMString(input);
-      expect(result).toContain('Owner: octocat');
-      expect(result).toContain('Repository: test-repo');
-      expect(result).toContain('Branch: main');
-      expect(result).toContain('Commit: abc123');
-      expect(result).toContain('SHA: def456');
-      expect(result).toContain('Author: John Doe');
-      expect(result).toContain('Created: 2023-01-01');
-      expect(result).toContain('Updated: 2023-01-02');
-      expect(result).toContain('Last Pushed: 2023-01-03');
-      expect(result).toContain('Stars: 100');
-      expect(result).toContain('Forks: 50');
-      expect(result).toContain('Language: TypeScript');
-      expect(result).toContain('Topics: LIST: web, api');
-      expect(result).toContain('License: MIT');
+      expect(result).toContain('owner: "octocat"');
+      expect(result).toContain('repo: "test-repo"');
+      expect(result).toContain('branch: "main"');
+      expect(result).toContain('commit: "abc123"');
+      expect(result).toContain('sha: "def456"');
+      expect(result).toContain('author: "John Doe"');
+      expect(result).toContain('created: 1/1/2023');
+      expect(result).toContain('updated: 1/2/2023');
+      expect(result).toContain('pushed: 1/3/2023');
+      expect(result).toContain('stars: 100');
+      expect(result).toContain('forks: 50');
+      expect(result).toContain('language: "TypeScript"');
+      expect(result).toContain('topics: LIST: "web", "api"');
+      expect(result).toContain('license: "MIT"');
     });
 
     it('should use NPM-specific semantic labels', () => {
@@ -308,24 +336,35 @@ Phone: undefined`;
       };
 
       const result = jsonToLLMString(input);
-      expect(result).toContain('Version: 1.0.0');
-      expect(result).toContain('Package: test-package');
-      expect(result).toContain('Dependencies:');
-      expect(result).toContain('Dev Dependencies:');
-      expect(result).toContain('Scripts:');
-      expect(result).toContain('Engines:');
-      expect(result).toContain('Keywords: LIST: test, utility');
-      expect(result).toContain('Homepage: https://example.com');
-      expect(result).toContain('Repository: github:user/repo');
-      expect(result).toContain('Bugs: https://github.com/user/repo/issues');
-      expect(result).toContain('Maintainers: LIST: John Doe');
+      expect(result).toContain('version: "1.0.0"');
+      expect(result).toContain('package: "test-package"');
+      expect(result).toContain('dependencies:');
+      expect(result).toContain('devDependencies:');
+      expect(result).toContain('scripts:');
+      expect(result).toContain('engines:');
+      expect(result).toContain('keywords: LIST: "test", "utility"');
+      expect(result).toContain('homepage: "https://example.com"');
+      expect(result).toContain('repository: "github:user/repo"');
+      expect(result).toContain('bugs: "https://github.com/user/repo/issues"');
+      expect(result).toContain('maintainers: LIST: "John Doe"');
     });
 
-    it('should capitalize unknown keys', () => {
-      const input = { customKey: 'value', anotherKey: 123 };
+    it('should preserve unknown keys exactly as they are', () => {
+      const input = {
+        customKey: 'value',
+        anotherKey: 123,
+        snake_case_key: 'test',
+        'kebab-case-key': 'test2',
+        PascalCaseKey: 'test3',
+        open_issues: 42,
+      };
       const result = jsonToLLMString(input);
-      expect(result).toContain('CustomKey: value');
-      expect(result).toContain('AnotherKey: 123');
+      expect(result).toContain('customKey: "value"');
+      expect(result).toContain('anotherKey: 123');
+      expect(result).toContain('snake_case_key: "test"');
+      expect(result).toContain('kebab-case-key: "test2"');
+      expect(result).toContain('PascalCaseKey: "test3"');
+      expect(result).toContain('open_issues: 42');
     });
   });
 
@@ -335,8 +374,8 @@ Phone: undefined`;
       const result = jsonToLLMString(jsonString);
 
       expect(result).toContain('[Transformed from JSON]');
-      expect(result).toContain('Name: test');
-      expect(result).toContain('Values: LIST: 1, 2, 3');
+      expect(result).toContain('name: "test"');
+      expect(result).toContain('values: LIST: 1, 2, 3');
     });
 
     it('should handle array JSON strings', () => {
@@ -344,7 +383,7 @@ Phone: undefined`;
       const result = jsonToLLMString(jsonString);
 
       expect(result).toBe(
-        '[Transformed from JSON]\nLIST: apple, banana, cherry'
+        '[Transformed from JSON]\nLIST: "apple", "banana", "cherry"'
       );
     });
 
@@ -354,47 +393,44 @@ Phone: undefined`;
       const result = jsonToLLMString(jsonString);
 
       expect(result).toContain('[Transformed from JSON]');
-      expect(result).toContain('User:');
-      expect(result).toContain('Name: John');
-      expect(result).toContain('Tags: LIST: admin, user');
+      expect(result).toContain('user:');
+      expect(result).toContain('name: "John"');
+      expect(result).toContain('tags: LIST: "admin", "user"');
     });
 
-    it('should treat invalid JSON strings as regular strings', () => {
+    it('should reject invalid JSON strings with error', () => {
       const invalidJson = '{"invalid": json}';
-      const result = jsonToLLMString(invalidJson);
-
-      expect(result).toBe('{"invalid": json}');
-      expect(result).not.toContain('[Transformed from JSON]');
+      expect(() => jsonToLLMString(invalidJson)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive strings'
+      );
     });
 
-    it('should treat regular strings as strings without parsing', () => {
+    it('should reject regular strings with error', () => {
       const regularString = 'This is just a regular string';
-      const result = jsonToLLMString(regularString);
-
-      expect(result).toBe('This is just a regular string');
-      expect(result).not.toContain('[Transformed from JSON]');
+      expect(() => jsonToLLMString(regularString)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive strings'
+      );
     });
 
-    it('should preserve strings with quotes', () => {
+    it('should reject strings with quotes', () => {
       const stringWithQuotes = 'Hello "world" with quotes';
-      const result = jsonToLLMString(stringWithQuotes);
-
-      expect(result).toBe('Hello "world" with quotes');
-      expect(result).not.toContain('[Transformed from JSON]');
+      expect(() => jsonToLLMString(stringWithQuotes)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive strings'
+      );
     });
   });
 
   describe('Token Efficiency Features', () => {
-    it('should truncate long strings', () => {
+    it('should reject primitive strings for truncation test', () => {
       const longString = 'a'.repeat(1500);
-      const result = jsonToLLMString(longString, 0, 10, null, '', 1000, 50);
-      expect(result).toContain('... [truncated]');
-      expect(result.length).toBeLessThan(1100); // 1000 + truncation message
+      expect(() => jsonToLLMString(longString, { maxLength: 1000 })).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive strings'
+      );
     });
 
     it('should limit array items', () => {
       const largeArray = Array.from({ length: 100 }, (_, i) => `item${i}`);
-      const result = jsonToLLMString(largeArray, 0, 10, null, '', 1000, 10);
+      const result = jsonToLLMString(largeArray, { maxArrayItems: 10 });
       expect(result).toContain('... [90 more items]');
       expect(result.split(',').length).toBeLessThan(15); // 10 items + truncation
     });
@@ -404,25 +440,17 @@ Phone: undefined`;
         id: i,
         name: `Item ${i}`,
       }));
-      const result = jsonToLLMString(
-        largeObjectArray,
-        0,
-        10,
-        null,
-        '',
-        1000,
-        5
-      );
+      const result = jsonToLLMString(largeObjectArray, { maxArrayItems: 5 });
       expect(result).toContain('... [95 more items]');
       // Should have 5 items + truncation message, so expect around 6-7 "Item" occurrences
       expect(result.split('Item ').length).toBeLessThan(12);
     });
 
-    it('should not truncate when limits are not exceeded', () => {
+    it('should reject short primitive strings', () => {
       const shortString = 'short';
-      const result = jsonToLLMString(shortString, 0, 10, null, '', 1000, 50);
-      expect(result).toBe('short');
-      expect(result).not.toContain('... [truncated]');
+      expect(() => jsonToLLMString(shortString)).toThrow(
+        'jsonToLLMString should only handle JSON objects or arrays, not primitive strings'
+      );
     });
   });
 });

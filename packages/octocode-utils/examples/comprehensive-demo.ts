@@ -12,9 +12,9 @@
  *
  * Features demonstrated:
  * ✅ JSON string parsing with [Transformed from JSON] indicators
- * ✅ LIST: format for arrays (more LLM-friendly than brackets)
- * ✅ Semantic labels (FilePath, Owner, Repository, etc.)
- * ✅ String preservation (unchanged from original)
+ * ✅ ITEMS: format for arrays (ultra-compact, token-efficient)
+ * ✅ Raw keys preserved without transformation (simplified approach)
+ * ✅ Input validation (objects/arrays only, primitives rejected)
  * ✅ Token efficiency (measured with real GPT-4 tokenizer)
  * ✅ Complex nested structures handling
  * ✅ Error response formatting
@@ -295,18 +295,25 @@ function demonstrateJsonStringParsing(): void {
   );
   console.log(`${colors.white}${result2}${colors.reset}`);
 
-  // Example 3: Invalid JSON (should be preserved as string)
+  // Example 3: Invalid JSON (should throw error)
   const invalidJson = '{"invalid": json without quotes}';
   console.log(
-    `\n${colors.yellow}📝 Invalid JSON String (should be preserved):${colors.reset}`
+    `\n${colors.yellow}📝 Invalid JSON String (should throw error):${colors.reset}`
   );
   console.log(`${colors.white}${invalidJson}${colors.reset}`);
 
-  const result3 = jsonToLLMString(invalidJson);
-  console.log(
-    `\n${colors.green}✅ Preserved as String (no transformation):${colors.reset}`
-  );
-  console.log(`${colors.white}${result3}${colors.reset}`);
+  try {
+    const result3 = jsonToLLMString(invalidJson);
+    console.log(
+      `\n${colors.green}✅ Transformed:${colors.reset}`
+    );
+    console.log(`${colors.white}${result3}${colors.reset}`);
+  } catch (error) {
+    console.log(
+      `\n${colors.red}❌ Error (as expected for invalid JSON):${colors.reset}`
+    );
+    console.log(`${colors.white}${error.message}${colors.reset}`);
+  }
 }
 
 /**
@@ -362,6 +369,11 @@ async function runComprehensiveDemo(): Promise<void> {
       filename: 'mixed-responses.json',
       title: 'MIXED SUCCESS/ERROR RESPONSES',
       // Contains: Error objects, success responses, partial results
+    },
+    {
+      filename: 'github-fetch-content.json',
+      title: 'GITHUB FILE CONTENT RETRIEVAL',
+      // Contains: React/TypeScript components, authentication forms, security filtering
     },
   ];
 
@@ -487,8 +499,8 @@ async function runComprehensiveDemo(): Promise<void> {
   const benefits = [
     `🎯 Token Efficiency: ${overallTokenReduction.toFixed(1)}% average reduction = more context fits in LLM windows`,
     `💰 Cost Reduction: $${totalCostSavings.toFixed(4)} savings per batch = lower API costs`,
-    `📋 Natural Arrays: "LIST:" format is more intuitive than JSON brackets for LLMs`,
-    `🏷️ Semantic Labels: "Repository", "Owner", "FilePath" provide better context than raw keys`,
+    `📋 Ultra-Compact Arrays: "ITEMS:" format eliminates redundant "Item N:" prefixes for maximum efficiency`,
+    `🏷️ Raw Keys Preserved: Keys kept as-is without transformation for clean, simple implementation`,
     `💭 Boolean Clarity: "yes/no" is more natural than "true/false" for language models`,
     `🧹 Syntax Elimination: Removes JSON noise (quotes, brackets, braces) that confuses parsing`,
     `🔄 Transform Indicators: "[Transformed from JSON]" helps LLMs understand data format`,

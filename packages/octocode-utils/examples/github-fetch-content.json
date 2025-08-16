@@ -1,0 +1,60 @@
+{
+    "data": [
+      {
+        "queryId": "file-content_1",
+        "researchGoal": "exploration",
+        "result": {
+          "filePath": "components/auth-form.tsx",
+          "owner": "vercel",
+          "repo": "ai-chatbot",
+          "branch": "009eed273cddf7eb53090ab183588bfcbccde51e",
+          "content": "import Form from 'next/form';\n\nimport { Input } from './ui/input';\nimport { Label } from './ui/label';\n\nexport function AuthForm({\n  action,\n  children,\n  defaultEmail = '',\n}: {\n  action: NonNullable<\n    string | ((formData: FormData) => void | Promise<void>) | undefined\n  >;\n  children: React.ReactNode;\n  defaultEmail?: string;\n}) {\n  return (\n    <Form action={action} className=\"flex flex-col gap-4 px-4 sm:px-16\">\n      <div className=\"flex flex-col gap-2\">\n        <Label\n          htmlFor=\"email\"\n          className=\"text-zinc-600 font-normal dark:text-zinc-400\"\n        >\n          Email Address\n        </Label>\n\n        <Input\n          id=\"email\"\n          name=\"email\"\n          className=\"bg-muted text-md md:text-sm\"\n          type=\"email\"\n          placeholder=\"[REDACTED-EMAILADDRESS]\"\n          autoComplete=\"email\"\n          required\n          autoFocus\n          defaultValue={defaultEmail}\n        />\n      </div>\n\n      <div className=\"flex flex-col gap-2\">\n        <Label\n          htmlFor=\"password\"\n          className=\"text-zinc-600 font-normal dark:text-zinc-400\"\n        >\n          Password\n        </Label>\n\n        <Input\n          id=\"password\"\n          name=\"password\"\n          className=\"bg-muted text-md md:text-sm\"\n          type=\"password\"\n          required\n        />\n      </div>\n\n      {children}\n    </Form>\n  );\n}\n",
+          "totalLines": 61,
+          "minified": false,
+          "minificationFailed": true,
+          "minificationType": "failed",
+          "securityWarnings": [
+            "Secrets detected and redacted: emailAddress",
+            "emailAddress"
+          ]
+        }
+      },
+      {
+        "queryId": "file-content_2",
+        "researchGoal": "exploration",
+        "result": {
+          "filePath": "components/chat.tsx",
+          "owner": "vercel",
+          "repo": "ai-chatbot",
+          "branch": "f66cbbd1f745e8c3ee020be6021bfd4f4a9f4e56",
+          "content": "'use client';\n\nimport { DefaultChatTransport } from 'ai';\nimport { useChat } from '@ai-sdk/react';\nimport { useEffect, useState } from 'react';\nimport useSWR, { useSWRConfig } from 'swr';\nimport { ChatHeader } from '@/components/chat-header';\nimport type { Vote } from '@/lib/db/schema';\nimport { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';\nimport { Artifact } from './artifact';\nimport { MultimodalInput } from './multimodal-input';\nimport { Messages } from './messages';\nimport type { VisibilityType } from './visibility-selector';\nimport { useArtifactSelector } from '@/hooks/use-artifact';\nimport { unstable_serialize } from 'swr/infinite';\nimport { getChatHistoryPaginationKey } from './sidebar-history';\nimport { toast } from './toast';\nimport type { Session } from 'next-auth';\nimport { useSearchParams } from 'next/navigation';\nimport { useChatVisibility } from '@/hooks/use-chat-visibility';\nimport { useAutoResume } from '@/hooks/use-auto-resume';\nimport { ChatSDKError } from '@/lib/errors';\nimport type { Attachment, ChatMessage } from '@/lib/types';\nimport { useDataStream } from './data-stream-provider';\n\nexport function Chat({\n  id,\n  initialMessages,\n  initialChatModel,\n  initialVisibilityType,\n  isReadonly,\n  session,\n  autoResume,\n}: {\n  id: string;\n  initialMessages: ChatMessage[];\n  initialChatModel: string;\n  initialVisibilityType: VisibilityType;\n  isReadonly: boolean;\n  session: Session;\n  autoResume: boolean;\n}) {\n  const { visibilityType } = useChatVisibility({\n    chatId: id,\n    initialVisibilityType,\n  });\n\n  const { mutate } = useSWRConfig();\n  const { setDataStream } = useDataStream();\n\n  const [input, setInput] = useState<string>('');\n\n  const {\n    messages,\n    setMessages,\n    sendMessage,\n    status,\n    stop,\n    regenerate,\n    resumeStream,\n  } = useChat<ChatMessage>({\n    id,\n    messages: initialMessages,\n    experimental_throttle: 100,\n    generateId: generateUUID,\n    transport: new DefaultChatTransport({\n      api: '/api/chat',\n      fetch: fetchWithErrorHandlers,\n      prepareSendMessagesRequest({ messages, id, body }) {\n        return {\n          body: {\n            id,\n            message: messages.at(-1),\n            selectedChatModel: initialChatModel,\n            selectedVisibilityType: visibilityType,\n            ...body,\n          },\n        };\n      },\n    }),\n    onData: (dataPart) => {\n      setDataStream((ds) => (ds ? [...ds, dataPart] : []));\n    },\n    onFinish: () => {\n      mutate(unstable_serialize(getChatHistoryPaginationKey));\n    },\n    onError: (error) => {\n      if (error instanceof ChatSDKError) {\n        toast({\n          type: 'error',\n          description: error.message,\n        });\n      }\n    },\n  });\n\n  const searchParams = useSearchParams();\n  const query = searchParams.get('query');\n\n  const [hasAppendedQuery, setHasAppendedQuery] = useState(false);\n\n  useEffect(() => {\n    if (query && !hasAppendedQuery) {\n      sendMessage({\n        role: 'user' as const,\n        parts: [{ type: 'text', text: query }],\n      });\n\n      setHasAppendedQuery(true);\n      window.history.replaceState({}, '', `/chat/${id}`);\n    }\n  }, [query, sendMessage, hasAppendedQuery, id]);\n\n  const { data: votes } = useSWR<Array<Vote>>(\n    messages.length >= 2 ? `/api/vote?chatId=${id}` : null,\n    fetcher,\n  );\n\n  const [attachments, setAttachments] = useState<Array<Attachment>>([]);\n  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);\n\n  useAutoResume({\n    autoResume,\n    initialMessages,\n    resumeStream,\n    setMessages,\n  });\n\n  return (\n    <>\n      <div className=\"flex flex-col min-w-0 h-dvh bg-background\">\n        <ChatHeader\n          chatId={id}\n          selectedModelId={initialChatModel}\n          selectedVisibilityType={initialVisibilityType}\n          isReadonly={isReadonly}\n          session={session}\n        />\n\n        <Messages\n          chatId={id}\n          status={status}\n          votes={votes}\n          messages={messages}\n          setMessages={setMessages}\n          regenerate={regenerate}\n          isReadonly={isReadonly}\n          isArtifactVisible={isArtifactVisible}\n        />\n\n        <form className=\"flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl\">\n          {!isReadonly && (\n            <MultimodalInput\n              chatId={id}\n              input={input}\n              setInput={setInput}\n              status={status}\n              stop={stop}\n              attachments={attachments}\n              setAttachments={setAttachments}\n              messages={messages}\n              setMessages={setMessages}\n              sendMessage={sendMessage}\n              selectedVisibilityType={visibilityType}\n            />\n          )}\n        </form>\n      </div>\n\n      <Artifact\n        chatId={id}\n        input={input}\n        setInput={setInput}\n        status={status}\n        stop={stop}\n        attachments={attachments}\n        setAttachments={setAttachments}\n        sendMessage={sendMessage}\n        messages={messages}\n        setMessages={setMessages}\n        regenerate={regenerate}\n        votes={votes}\n        isReadonly={isReadonly}\n        selectedVisibilityType={visibilityType}\n      />\n    </>\n  );\n}\n",
+          "totalLines": 189,
+          "minified": false,
+          "minificationFailed": true,
+          "minificationType": "failed"
+        }
+      },
+      {
+        "queryId": "file-content_3",
+        "researchGoal": "exploration",
+        "result": {
+          "filePath": "app/layout.tsx",
+          "owner": "vercel",
+          "repo": "ai-chatbot",
+          "branch": "1813e0f71b3800e9bf362bdda7ea3b366e04c961",
+          "content": "import { Toaster } from 'sonner';\nimport type { Metadata } from 'next';\nimport { Geist, Geist_Mono } from 'next/font/google';\nimport { ThemeProvider } from '@/components/theme-provider';\n\nimport './globals.css';\nimport { SessionProvider } from 'next-auth/react';\n\nexport const metadata: Metadata = {\n  metadataBase: new URL('https://chat.vercel.ai'),\n  title: 'Next.js Chatbot Template',\n  description: 'Next.js chatbot template using the AI SDK.',\n};\n\nexport const viewport = {\n  maximumScale: 1, // Disable auto-zoom on mobile Safari\n};\n\nconst geist = Geist({\n  subsets: ['latin'],\n  display: 'swap',\n  variable: '--font-geist',\n});\n\nconst geistMono = Geist_Mono({\n  subsets: ['latin'],\n  display: 'swap',\n  variable: '--font-geist-mono',\n});\n\nconst LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';\nconst DARK_THEME_COLOR = 'hsl(240deg 10% 3.92%)';\nconst THEME_COLOR_SCRIPT = `\\\n(function() {\n  var html = document.documentElement;\n  var meta = document.querySelector('meta[name=\"theme-color\"]');\n  if (!meta) {\n    meta = document.createElement('meta');\n    meta.setAttribute('name', 'theme-color');\n    document.head.appendChild(meta);\n  }\n  function updateThemeColor() {\n    var isDark = html.classList.contains('dark');\n    meta.setAttribute('content', isDark ? '${DARK_THEME_COLOR}' : '${LIGHT_THEME_COLOR}');\n  }\n  var observer = new MutationObserver(updateThemeColor);\n  observer.observe(html, { attributes: true, attributeFilter: ['class'] });\n  updateThemeColor();\n})();`;\n\nexport default async function RootLayout({\n  children,\n}: Readonly<{\n  children: React.ReactNode;\n}>) {\n  return (\n    <html\n      lang=\"en\"\n      // `next-themes` injects an extra classname to the body element to avoid\n      // visual flicker before hydration. Hence the `suppressHydrationWarning`\n      // prop is necessary to avoid the React hydration mismatch warning.\n      // https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app\n      suppressHydrationWarning\n      className={`${geist.variable} ${geistMono.variable}`}\n    >\n      <head>\n        <script\n          dangerouslySetInnerHTML={{\n            __html: THEME_COLOR_SCRIPT,\n          }}\n        />\n      </head>\n      <body className=\"antialiased\">\n        <ThemeProvider\n          attribute=\"class\"\n          defaultTheme=\"system\"\n          enableSystem\n          disableTransitionOnChange\n        >\n          <Toaster position=\"top-center\" />\n          <SessionProvider>{children}</SessionProvider>\n        </ThemeProvider>\n      </body>\n    </html>\n  );\n}\n",
+          "totalLines": 87,
+          "minified": false,
+          "minificationFailed": true,
+          "minificationType": "failed"
+        }
+      }
+    ],
+    "meta": {},
+    "hints": [
+      "From implementation files, find: imports, exports, tests, and related modules",
+      "Always verify documentation claims against actual implementation code",
+      "Look for main files, index files, and public APIs to understand code structure",
+      "Examine imports/exports to understand dependencies and usage"
+    ]
+  }
