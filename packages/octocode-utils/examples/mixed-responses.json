@@ -1,0 +1,295 @@
+{
+  "_comment": "⚡ Mixed API Responses Example",
+  "_description": "This file contains a mixed collection of API responses that tests jsonToLLMString's ability to handle: (1) Success responses with complex data structures, (2) Error responses with detailed error objects and resolution steps, (3) Partial success responses with warning arrays, (4) Rate limiting errors with retry information, (5) Authentication errors with scope details, (6) File content responses with code samples, (7) Metadata objects with performance metrics. This represents real-world API batch processing where some calls succeed and others fail.",
+  "_test_cases": "Tests error handling, warning arrays (warnings->LIST), mixed data types, status indicators, and complex nested success/failure patterns",
+  "results": [
+    {
+      "query_id": "successful_repo_search",
+      "status": "success",
+      "data": {
+        "repository": {
+          "id": 123456789,
+          "name": "awesome-project",
+          "owner": "octocode",
+          "description": "An amazing open-source project that revolutionizes development workflows",
+          "language": "TypeScript",
+          "stars": 15642,
+          "forks": 2843,
+          "open_issues": 127,
+          "license": "MIT",
+          "topics": [
+            "typescript",
+            "developer-tools",
+            "automation",
+            "ai-powered",
+            "open-source"
+          ],
+          "created_at": "2023-01-15T10:30:00Z",
+          "updated_at": "2023-12-15T14:22:33Z",
+          "contributors": [
+            {
+              "login": "alice-developer",
+              "id": 11111111,
+              "contributions": 542,
+              "role": "maintainer"
+            },
+            {
+              "login": "bob-contributor", 
+              "id": 22222222,
+              "contributions": 234,
+              "role": "contributor"
+            },
+            {
+              "login": "carol-reviewer",
+              "id": 33333333,
+              "contributions": 89,
+              "role": "reviewer"
+            }
+          ],
+          "recent_releases": [
+            {
+              "tag_name": "v2.1.0",
+              "name": "Major Feature Release",
+              "published_at": "2023-12-10T09:15:00Z",
+              "assets": [
+                {
+                  "name": "awesome-project-v2.1.0.tar.gz",
+                  "size": 15678432,
+                  "download_count": 5643
+                },
+                {
+                  "name": "awesome-project-v2.1.0.zip",
+                  "size": 18234567,
+                  "download_count": 8901
+                }
+              ]
+            }
+          ],
+          "statistics": {
+            "code_frequency": {
+              "additions_last_week": 1234,
+              "deletions_last_week": 567
+            },
+            "commit_activity": {
+              "total_commits": 3456,
+              "commits_last_week": 23,
+              "active_contributors": 12
+            },
+            "dependency_graph": {
+              "total_dependencies": 45,
+              "outdated_dependencies": 3,
+              "security_vulnerabilities": 0
+            }
+          }
+        }
+      },
+      "execution_time_ms": 234.56,
+      "cache_hit": false
+    },
+    {
+      "query_id": "rate_limited_request", 
+      "status": "error",
+      "error": {
+        "type": "rate_limit_exceeded",
+        "message": "API rate limit exceeded. Please wait before making more requests.",
+        "code": 429,
+        "details": {
+          "limit": 5000,
+          "remaining": 0,
+          "reset_at": "2023-12-15T15:30:00Z",
+          "retry_after": 3600,
+          "resource": "core"
+        },
+        "documentation_url": "https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"
+      },
+      "execution_time_ms": 12.34,
+      "cache_hit": false
+    },
+    {
+      "query_id": "not_found_repository",
+      "status": "error", 
+      "error": {
+        "type": "not_found",
+        "message": "Repository not found or you don't have access to it",
+        "code": 404,
+        "details": {
+          "resource": "repository",
+          "requested": "nonexistent-org/missing-repo",
+          "possible_reasons": [
+            "Repository does not exist",
+            "Repository is private and you don't have access",
+            "Repository name or organization name is misspelled",
+            "You don't have the required permissions"
+          ]
+        }
+      },
+      "execution_time_ms": 45.67,
+      "cache_hit": false
+    },
+    {
+      "query_id": "partial_success_with_warnings",
+      "status": "partial_success",
+      "data": {
+        "file_contents": {
+          "path": "src/components/Button.tsx",
+          "size": 2048,
+          "content": "import React from 'react';\nimport { styled } from 'styled-components';\nimport { ButtonProps, ButtonVariant, ButtonSize } from './types';\n\n/**\n * A highly customizable button component with multiple variants and sizes\n * Supports theming, accessibility features, and loading states\n */\nconst StyledButton = styled.button<ButtonProps>`\n  padding: ${props => {\n    switch (props.size) {\n      case 'small': return '8px 16px';\n      case 'medium': return '12px 24px';\n      case 'large': return '16px 32px';\n      default: return '12px 24px';\n    }\n  }};\n  \n  background-color: ${props => {\n    switch (props.variant) {\n      case 'primary': return props.theme.colors.primary;\n      case 'secondary': return props.theme.colors.secondary;\n      case 'danger': return props.theme.colors.danger;\n      default: return props.theme.colors.primary;\n    }\n  }};\n  \n  color: white;\n  border: none;\n  border-radius: ${props => props.theme.borderRadius};\n  font-family: ${props => props.theme.fonts.primary};\n  font-weight: 600;\n  cursor: pointer;\n  transition: all 0.2s ease-in-out;\n  \n  &:hover {\n    opacity: 0.9;\n    transform: translateY(-1px);\n  }\n  \n  &:active {\n    transform: translateY(0);\n  }\n  \n  &:disabled {\n    opacity: 0.5;\n    cursor: not-allowed;\n    transform: none;\n  }\n  \n  ${props => props.loading && `\n    position: relative;\n    color: transparent;\n    \n    &::after {\n      content: '';\n      position: absolute;\n      width: 16px;\n      height: 16px;\n      top: 50%;\n      left: 50%;\n      margin: -8px 0 0 -8px;\n      border: 2px solid transparent;\n      border-top: 2px solid currentColor;\n      border-radius: 50%;\n      animation: button-spin 1s linear infinite;\n    }\n    \n    @keyframes button-spin {\n      0% { transform: rotate(0deg); }\n      100% { transform: rotate(360deg); }\n    }\n  `}\n`;\n\nexport const Button: React.FC<ButtonProps> = ({\n  children,\n  variant = 'primary',\n  size = 'medium',\n  loading = false,\n  disabled = false,\n  onClick,\n  ...props\n}) => {\n  return (\n    <StyledButton\n      variant={variant}\n      size={size}\n      loading={loading}\n      disabled={disabled || loading}\n      onClick={onClick}\n      {...props}\n    >\n      {children}\n    </StyledButton>\n  );\n};",
+          "encoding": "utf-8",
+          "lines": 78
+        }
+      },
+      "warnings": [
+        {
+          "type": "deprecation_warning",
+          "message": "The 'styled-components' import pattern used is deprecated",
+          "line": 2,
+          "suggestion": "Use: import styled from 'styled-components'"
+        },
+        {
+          "type": "accessibility_warning", 
+          "message": "Button component should include aria-label when used with icons only",
+          "line": 67,
+          "suggestion": "Add aria-label prop to ButtonProps interface"
+        },
+        {
+          "type": "performance_warning",
+          "message": "Consider memoizing the styled component to prevent unnecessary re-renders",
+          "line": 9,
+          "suggestion": "Wrap StyledButton with React.memo() or use useMemo for complex calculations"
+        }
+      ],
+      "execution_time_ms": 156.78,
+      "cache_hit": true
+    },
+    {
+      "query_id": "authentication_failed",
+      "status": "error",
+      "error": {
+        "type": "authentication_error",
+        "message": "Invalid authentication credentials",
+        "code": 401,
+        "details": {
+          "authentication_method": "token",
+          "token_type": "personal_access_token",
+          "scopes_required": [
+            "repo",
+            "read:user",
+            "read:org"
+          ],
+          "scopes_provided": [
+            "public_repo"
+          ],
+          "missing_scopes": [
+            "repo",
+            "read:user", 
+            "read:org"
+          ]
+        },
+        "resolution_steps": [
+          "Check that your personal access token is valid and hasn't expired",
+          "Ensure your token has the required scopes: repo, read:user, read:org",
+          "Regenerate your token if necessary from GitHub Settings > Developer settings > Personal access tokens",
+          "Update your application configuration with the new token"
+        ]
+      },
+      "execution_time_ms": 89.12,
+      "cache_hit": false
+    },
+    {
+      "query_id": "successful_npm_package_info",
+      "status": "success",
+      "data": {
+        "package": {
+          "name": "@types/react",
+          "version": "18.2.45",
+          "description": "TypeScript definitions for React",
+          "main": "",
+          "types": "index.d.ts",
+          "repository": {
+            "type": "git",
+            "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+            "directory": "types/react"
+          },
+          "keywords": [
+            "react",
+            "typescript",
+            "types",
+            "definitions",
+            "jsx",
+            "components"
+          ],
+          "author": "DefinitelyTyped",
+          "license": "MIT",
+          "dependencies": {
+            "@types/prop-types": "*",
+            "@types/scheduler": "*",
+            "csstype": "^3.0.2"
+          },
+          "devDependencies": {},
+          "peerDependencies": {},
+          "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react",
+          "bugs": {
+            "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues"
+          },
+          "readme": "# Installation\n> `npm install --save @types/react`\n\n# Summary\nThis package contains type definitions for React (https://react.dev/).\n\n# Details\nFiles were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react.\n\n## Additional Details\n * Last updated: Mon, 11 Dec 2023 18:07:24 GMT\n * Dependencies: [@types/prop-types](https://npmjs.com/package/@types/prop-types), [@types/scheduler](https://npmjs.com/package/@types/scheduler), [csstype](https://npmjs.com/package/csstype)\n * Global values: none\n\n# Credits\nDefinitions by: Asana <https://asana.com>, AssureSign <http://www.assuresign.com>, Microsoft <https://microsoft.com>, John Reilly <https://github.com/johnnyreilly>, Benoit Bienvenu <https://github.com/bbenoist>, Patricio Zavolinsky <https://github.com/pzavolinsky>, Eric Anderson <https://github.com/ericanderson>, Dovydas Navickas <https://github.com/DovydasNavickas>, Josh Rutherford <https://github.com/theruther4d>, Guilherme Hübner <https://github.com/guilhermehubner>, Ferdy Budhidharma <https://github.com/ferdaber>, Johann Rakotoharisoa <https://github.com/jrakotoharisoa>, Olivier Pascal <https://github.com/pascaloliv>, Martin Hochel <https://github.com/hotell>, Frank Li <https://github.com/franklixuefei>, Jessica Franco <https://github.com/Jessidhia>, Saransh Kataria <https://github.com/saranshkataria>, Kanitkorn Sujautra <https://github.com/lukyth>, Sebastian Silbermann <https://github.com/eps1lon>, Kyle Holmberg <https://github.com/kholmberg>, Cong Zhang <https://github.com/cangzhang>, Dimitri Mitropoulos <https://github.com/dimitropoulos>, JongChan Choi <https://github.com/disjukr>, Victor Magalhães <https://github.com/vhfmag>, Dale Tan <https://github.com/hellatan>, Priyanshu Rav <https://github.com/priyanshurav>.",
+          "readmeFilename": "README.md",
+          "gitHead": "abc123def456789012345678901234567890abcdef",
+          "_id": "@types/react@18.2.45",
+          "_nodeVersion": "18.18.2",
+          "_npmVersion": "9.8.1",
+          "dist": {
+            "integrity": "sha512-TtAxCNrlrBp8GoeC1P0Z5NgTAG/mzb3C9/f/0oMnr5g3M4u4t1jw+f8oJGtaKk3J6xhcSb1V9D2Z+fY3e3sGTw==",
+            "shasum": "b1c38bd27e45d5c908b2b0c6afd3b4c3b4e4e7c8",
+            "tarball": "https://registry.npmjs.org/@types/react/-/react-18.2.45.tgz",
+            "fileCount": 2,
+            "unpackedSize": 398234,
+            "npm-signature": "-----BEGIN PGP SIGNATURE-----\n...\n-----END PGP SIGNATURE-----"
+          },
+          "maintainers": [
+            {
+              "name": "types",
+              "email": "ts-npm-types@microsoft.com"
+            }
+          ],
+          "downloads": {
+            "last_day": 2456789,
+            "last_week": 15432109,
+            "last_month": 67891234
+          },
+          "popularity": 0.987654321,
+          "quality": 0.956789123,
+          "maintenance": 0.934567891
+        }
+      },
+      "execution_time_ms": 178.91,
+      "cache_hit": true
+    }
+  ],
+  "metadata": {
+    "total_queries": 6,
+    "successful": 3,
+    "failed": 2,
+    "partial": 1,
+    "success_rate": 0.666667,
+    "total_execution_time_ms": 717.44,
+    "average_execution_time_ms": 119.57,
+    "cache_hit_rate": 0.333333,
+    "timestamp": "2023-12-15T10:45:30.123Z",
+    "api_version": "v4.2.1",
+    "rate_limit_info": {
+      "limit": 5000,
+      "remaining": 4987,
+      "reset_at": "2023-12-15T11:45:30Z",
+      "used": 13
+    }
+  },
+  "debug_info": {
+    "request_id": "req_1a2b3c4d5e6f7890",
+    "server_region": "us-east-1", 
+    "processing_node": "api-worker-07",
+    "database_queries": 12,
+    "external_api_calls": 8,
+    "memory_usage_mb": 45.67,
+    "cpu_time_ms": 234.56
+  }
+}

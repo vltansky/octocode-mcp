@@ -1,0 +1,306 @@
+{
+  "_comment": "🔄 GitHub Pull Request API Response Example",
+  "_description": "This file contains a complete GitHub pull request response that tests jsonToLLMString with: (1) Detailed PR metadata with assignees and reviewers, (2) Review objects with approval/change states, (3) File change arrays with addition/deletion counts, (4) Status check arrays from CI/CD systems, (5) Label arrays with color and description metadata, (6) Milestone objects with progress tracking, (7) Complex markdown body content with code examples. This represents the most comprehensive PR data structure with all possible fields populated.",
+  "_test_cases": "Tests review state handling, file change arrays (changes->LIST), status arrays, label formatting, and complex nested user objects",
+  "url": "https://api.github.com/repos/octocode/advanced-toolkit/pulls/142",
+  "id": 1678901234,
+  "node_id": "PR_kwDOBuOJA85ji_MK",
+  "html_url": "https://github.com/octocode/advanced-toolkit/pull/142",
+  "diff_url": "https://github.com/octocode/advanced-toolkit/pull/142.diff",
+  "patch_url": "https://github.com/octocode/advanced-toolkit/pull/142.patch",
+  "issue_url": "https://api.github.com/repos/octocode/advanced-toolkit/issues/142",
+  "number": 142,
+  "state": "open",
+  "locked": false,
+  "title": "feat: Add advanced OAuth authentication with PKCE support",
+  "user": {
+    "login": "alice-codes",
+    "id": 12345678,
+    "node_id": "MDQ6VXNlcjEyMzQ1Njc4",
+    "avatar_url": "https://avatars.githubusercontent.com/u/12345678?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/alice-codes",
+    "html_url": "https://github.com/alice-codes",
+    "followers_url": "https://api.github.com/users/alice-codes/followers",
+    "following_url": "https://api.github.com/users/alice-codes/following{/other_user}",
+    "gists_url": "https://api.github.com/users/alice-codes/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/alice-codes/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/alice-codes/subscriptions",
+    "organizations_url": "https://api.github.com/users/alice-codes/orgs",
+    "repos_url": "https://api.github.com/users/alice-codes/repos",
+    "events_url": "https://api.github.com/users/alice-codes/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/alice-codes/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "body": "## Summary\n\nThis PR introduces a comprehensive OAuth authentication system with PKCE (Proof Key for Code Exchange) support for enhanced security in client-side applications.\n\n### Key Features\n- ✅ OAuth 2.0 Authorization Code Flow with PKCE\n- ✅ Support for multiple providers (GitHub, Google, Microsoft)\n- ✅ JWT token management with refresh capabilities\n- ✅ Rate limiting and security controls\n- ✅ Comprehensive error handling\n- ✅ TypeScript support with full type definitions\n\n### Breaking Changes\n- `AuthManager` class renamed to `AuthenticationManager`\n- Configuration structure updated for provider-specific settings\n- Token format changed to include additional security metadata\n\n### Migration Guide\n```typescript\n// Before\nconst auth = new AuthManager({\n  clientId: 'your-client-id',\n  clientSecret: 'your-secret'\n});\n\n// After  \nconst auth = new AuthenticationManager({\n  github: {\n    enabled: true,\n    clientId: 'your-github-client-id',\n    clientSecret: 'your-github-secret'\n  },\n  google: {\n    enabled: true,\n    clientId: 'your-google-client-id',\n    clientSecret: 'your-google-secret'\n  }\n});\n```\n\n### Testing\n- Added 89 new test cases covering all authentication flows\n- Integration tests for OAuth providers\n- Security vulnerability testing\n- Performance benchmarks\n\n### Documentation\n- Updated README with new authentication examples\n- Added comprehensive API documentation\n- Created migration guide for existing users\n\nFixes #134, #127, #95\nCloses #142",
+  "created_at": "2023-12-10T14:25:33Z",
+  "updated_at": "2023-12-15T09:45:22Z",
+  "closed_at": null,
+  "merged_at": null,
+  "merge_commit_sha": null,
+  "assignee": {
+    "login": "bob-builds",
+    "id": 23456789,
+    "node_id": "MDQ6VXNlcjIzNDU2Nzg5",
+    "avatar_url": "https://avatars.githubusercontent.com/u/23456789?v=4",
+    "type": "User",
+    "site_admin": false
+  },
+  "assignees": [
+    {
+      "login": "bob-builds", 
+      "id": 23456789,
+      "type": "User"
+    },
+    {
+      "login": "carol-creates",
+      "id": 34567890,
+      "type": "User"
+    }
+  ],
+  "requested_reviewers": [
+    {
+      "login": "security-expert",
+      "id": 45678901,
+      "type": "User"
+    }
+  ],
+  "requested_teams": [
+    {
+      "id": 567890123,
+      "node_id": "T_kwDOBuOJA8567890123",
+      "name": "security-team",
+      "slug": "security-team",
+      "description": "Application security and authentication experts",
+      "privacy": "closed",
+      "url": "https://api.github.com/teams/567890123",
+      "html_url": "https://github.com/orgs/octocode/teams/security-team"
+    }
+  ],
+  "labels": [
+    {
+      "id": 678901234,
+      "node_id": "LA_kwDOBuOJA8678901234",
+      "url": "https://api.github.com/repos/octocode/advanced-toolkit/labels/enhancement",
+      "name": "enhancement",
+      "color": "a2eeef",
+      "default": true,
+      "description": "New feature or request"
+    },
+    {
+      "id": 789012345,
+      "node_id": "LA_kwDOBuOJA8789012345",
+      "url": "https://api.github.com/repos/octocode/advanced-toolkit/labels/security",
+      "name": "security",
+      "color": "d73a4a",
+      "default": false,
+      "description": "Security-related changes"
+    },
+    {
+      "id": 890123456,
+      "node_id": "LA_kwDOBuOJA8890123456",
+      "url": "https://api.github.com/repos/octocode/advanced-toolkit/labels/breaking-change",
+      "name": "breaking-change",
+      "color": "f9c23c",
+      "default": false,
+      "description": "Contains breaking changes"
+    }
+  ],
+  "milestone": {
+    "url": "https://api.github.com/repos/octocode/advanced-toolkit/milestones/5",
+    "html_url": "https://github.com/octocode/advanced-toolkit/milestone/5",
+    "labels_url": "https://api.github.com/repos/octocode/advanced-toolkit/milestones/5/labels",
+    "id": 901234567,
+    "node_id": "MI_kwDOBuOJA8901234567",
+    "number": 5,
+    "title": "v4.0.0 - Authentication Overhaul",
+    "description": "Major authentication system redesign with OAuth 2.0, PKCE, and enhanced security features",
+    "creator": {
+      "login": "alice-codes",
+      "id": 12345678,
+      "type": "User"
+    },
+    "open_issues": 8,
+    "closed_issues": 23,
+    "state": "open",
+    "created_at": "2023-11-01T10:00:00Z",
+    "updated_at": "2023-12-15T09:30:15Z",
+    "due_on": "2024-01-31T23:59:59Z",
+    "closed_at": null
+  },
+  "draft": false,
+  "commits_url": "https://api.github.com/repos/octocode/advanced-toolkit/pulls/142/commits",
+  "review_comments_url": "https://api.github.com/repos/octocode/advanced-toolkit/pulls/142/comments",
+  "review_comment_url": "https://api.github.com/repos/octocode/advanced-toolkit/pulls/comments{/number}",
+  "comments_url": "https://api.github.com/repos/octocode/advanced-toolkit/issues/142/comments",
+  "statuses_url": "https://api.github.com/repos/octocode/advanced-toolkit/statuses/f7e8d9c0b1a2e3f4567890abcdef123456789012",
+  "head": {
+    "label": "octocode:feature/oauth-pkce-auth",
+    "ref": "feature/oauth-pkce-auth",
+    "sha": "f7e8d9c0b1a2e3f4567890abcdef123456789012",
+    "user": {
+      "login": "octocode",
+      "id": 98765432,
+      "type": "Organization"
+    },
+    "repo": {
+      "id": 567890123,
+      "name": "advanced-toolkit",
+      "full_name": "octocode/advanced-toolkit",
+      "private": false,
+      "description": "A comprehensive toolkit for advanced code analysis, transformation, and optimization with AI-powered features",
+      "language": "TypeScript",
+      "stargazers_count": 4521,
+      "default_branch": "main"
+    }
+  },
+  "base": {
+    "label": "octocode:main",
+    "ref": "main",
+    "sha": "a1b2c3d4e5f67890abcdef1234567890fedcba98",
+    "user": {
+      "login": "octocode",
+      "id": 98765432,
+      "type": "Organization"
+    },
+    "repo": {
+      "id": 567890123,
+      "name": "advanced-toolkit",
+      "full_name": "octocode/advanced-toolkit"
+    }
+  },
+  "_links": {
+    "self": {
+      "href": "https://api.github.com/repos/octocode/advanced-toolkit/pulls/142"
+    },
+    "html": {
+      "href": "https://github.com/octocode/advanced-toolkit/pull/142"
+    },
+    "issue": {
+      "href": "https://api.github.com/repos/octocode/advanced-toolkit/issues/142"
+    },
+    "comments": {
+      "href": "https://api.github.com/repos/octocode/advanced-toolkit/issues/142/comments"
+    },
+    "review_comments": {
+      "href": "https://api.github.com/repos/octocode/advanced-toolkit/pulls/142/comments"
+    },
+    "review_comment": {
+      "href": "https://api.github.com/repos/octocode/advanced-toolkit/pulls/comments{/number}"
+    },
+    "commits": {
+      "href": "https://api.github.com/repos/octocode/advanced-toolkit/pulls/142/commits"
+    },
+    "statuses": {
+      "href": "https://api.github.com/repos/octocode/advanced-toolkit/statuses/f7e8d9c0b1a2e3f4567890abcdef123456789012"
+    }
+  },
+  "author_association": "MEMBER",
+  "auto_merge": null,
+  "active_lock_reason": null,
+  "merged": false,
+  "mergeable": true,
+  "rebaseable": true,
+  "mergeable_state": "clean",
+  "merged_by": null,
+  "comments": 15,
+  "review_comments": 23,
+  "maintainer_can_modify": true,
+  "commits": 12,
+  "additions": 847,
+  "deletions": 234,
+  "changed_files": 18,
+  "reviews": [
+    {
+      "id": 1234567890,
+      "node_id": "PRR_kwDOBuOJA81234567890",
+      "user": {
+        "login": "security-expert",
+        "id": 45678901,
+        "type": "User"
+      },
+      "body": "Overall this looks great! The PKCE implementation is solid and follows security best practices. I have a few minor suggestions:\n\n1. Consider adding rate limiting to the token refresh endpoint\n2. The PKCE code verifier should be stored securely (perhaps encrypted)\n3. Add more comprehensive logging for security events\n\nThe test coverage is excellent and the documentation is thorough. LGTM with minor changes! 🚀",
+      "state": "approved",
+      "html_url": "https://github.com/octocode/advanced-toolkit/pull/142#pullrequestreview-1234567890",
+      "pull_request_url": "https://api.github.com/repos/octocode/advanced-toolkit/pulls/142",
+      "author_association": "COLLABORATOR",
+      "submitted_at": "2023-12-14T16:30:45Z",
+      "commit_id": "f7e8d9c0b1a2e3f4567890abcdef123456789012"
+    },
+    {
+      "id": 2345678901,
+      "node_id": "PRR_kwDOBuOJA82345678901", 
+      "user": {
+        "login": "bob-builds",
+        "id": 23456789,
+        "type": "User"
+      },
+      "body": "The code architecture looks solid and the TypeScript types are comprehensive. A few technical observations:\n\n- The provider abstraction is well designed\n- Error handling covers edge cases nicely\n- Performance impact should be minimal\n\nHowever, I noticed a potential memory leak in the token cache. Consider implementing a TTL-based cleanup mechanism.\n\nRequesting changes for the memory management issue.",
+      "state": "changes_requested",
+      "html_url": "https://github.com/octocode/advanced-toolkit/pull/142#pullrequestreview-2345678901",
+      "pull_request_url": "https://api.github.com/repos/octocode/advanced-toolkit/pulls/142",
+      "author_association": "MEMBER",
+      "submitted_at": "2023-12-13T14:20:15Z",
+      "commit_id": "e6d7c8b9a0f1e2d3c4b5a6978901234567890123"
+    }
+  ],
+  "status_checks": [
+    {
+      "context": "ci/github-actions",
+      "state": "success",
+      "description": "All tests passed",
+      "target_url": "https://github.com/octocode/advanced-toolkit/actions/runs/7123456789"
+    },
+    {
+      "context": "security/snyk",
+      "state": "success", 
+      "description": "No security vulnerabilities found",
+      "target_url": "https://app.snyk.io/org/octocode/project/567890123"
+    },
+    {
+      "context": "code-quality/sonarcloud",
+      "state": "pending",
+      "description": "Code quality analysis in progress",
+      "target_url": "https://sonarcloud.io/dashboard?id=octocode_advanced-toolkit"
+    }
+  ],
+  "file_changes": [
+    {
+      "filename": "src/auth/authentication.ts",
+      "status": "added",
+      "additions": 234,
+      "deletions": 0,
+      "changes": 234,
+      "patch": "@@ -0,0 +1,234 @@\n+import { OAuth2Client } from 'google-auth-library';\n+import { GitHubAuthProvider } from './providers/github';\n+import { GoogleAuthProvider } from './providers/google';\n+import { MicrosoftAuthProvider } from './providers/microsoft';\n+import { JWTToken, AuthProvider, UserProfile, AuthConfig } from '../types/auth';\n+\n+/**\n+ * Advanced authentication manager with support for multiple OAuth providers\n+ * and JWT token management with refresh capabilities.\n+ */\n+export class AuthenticationManager {\n+  private providers: Map<string, AuthProvider>;\n+  private config: AuthConfig;\n+  private refreshTokens: Map<string, string>;\n+\n+  constructor(config: AuthConfig) {\n+    this.config = config;\n+    this.providers = new Map();\n+    this.refreshTokens = new Map();\n+    \n+    // Initialize supported authentication providers\n+    this.initializeProviders();\n+  }"
+    },
+    {
+      "filename": "src/auth/providers/github.ts",
+      "status": "added", 
+      "additions": 156,
+      "deletions": 0,
+      "changes": 156
+    },
+    {
+      "filename": "src/auth/providers/google.ts",
+      "status": "added",
+      "additions": 142,
+      "deletions": 0,
+      "changes": 142
+    },
+    {
+      "filename": "src/types/auth.ts",
+      "status": "added",
+      "additions": 89,
+      "deletions": 0,
+      "changes": 89
+    },
+    {
+      "filename": "src/legacy/auth-manager.ts",
+      "status": "removed",
+      "additions": 0,
+      "deletions": 234,
+      "changes": 234
+    }
+  ]
+}

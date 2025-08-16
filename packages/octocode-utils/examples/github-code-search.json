@@ -1,0 +1,265 @@
+{
+  "_comment": "🔍 GitHub Code Search API Response Example",
+  "_description": "This file contains a GitHub code search response with text matches that tests jsonToLLMString's ability to handle: (1) Code fragments with syntax highlighting, (2) Text match arrays with indices and highlighted terms, (3) Repository metadata embedded in search results, (4) Multi-language code samples (TypeScript, JavaScript, Python), (5) File path and URL structures, (6) Score-based ranking systems, (7) Complex nested arrays with match objects. This represents the most complex search result with actual code content.",
+  "_test_cases": "Tests code fragment preservation, text match array formatting (matches->LIST), repository nesting, and multi-language syntax handling",
+  "total_count": 7892,
+  "incomplete_results": false,
+  "items": [
+    {
+      "name": "authentication.ts",
+      "path": "src/auth/authentication.ts",
+      "sha": "f7e8d9c0b1a2e3f4567890abcdef123456789012",
+      "url": "https://api.github.com/repos/octocode/advanced-toolkit/contents/src/auth/authentication.ts?ref=main",
+      "git_url": "https://api.github.com/repos/octocode/advanced-toolkit/git/blobs/f7e8d9c0b1a2e3f4567890abcdef123456789012",
+      "html_url": "https://github.com/octocode/advanced-toolkit/blob/main/src/auth/authentication.ts",
+      "repository": {
+        "id": 567890123,
+        "node_id": "R_kgDOIgw4Cw",
+        "name": "advanced-toolkit",
+        "full_name": "octocode/advanced-toolkit",
+        "private": false,
+        "owner": {
+          "login": "octocode",
+          "id": 98765432,
+          "node_id": "O_kgDOBeC5_A",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98765432?s=40&v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/octocode",
+          "html_url": "https://github.com/octocode",
+          "followers_url": "https://api.github.com/users/octocode/followers",
+          "following_url": "https://api.github.com/users/octocode/following{/other_user}",
+          "gists_url": "https://api.github.com/users/octocode/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/octocode/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/octocode/subscriptions",
+          "organizations_url": "https://api.github.com/users/octocode/orgs",
+          "repos_url": "https://api.github.com/users/octocode/repos",
+          "events_url": "https://api.github.com/users/octocode/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/octocode/received_events",
+          "type": "Organization",
+          "site_admin": false
+        },
+        "html_url": "https://github.com/octocode/advanced-toolkit",
+        "description": "A comprehensive toolkit for advanced code analysis, transformation, and optimization with AI-powered features",
+        "fork": false,
+        "url": "https://api.github.com/repos/octocode/advanced-toolkit",
+        "created_at": "2023-01-15T14:22:33Z",
+        "updated_at": "2023-12-15T09:30:45Z",
+        "pushed_at": "2023-12-15T08:15:22Z",
+        "clone_url": "https://github.com/octocode/advanced-toolkit.git",
+        "size": 15678,
+        "stargazers_count": 4521,
+        "watchers_count": 4521,
+        "language": "TypeScript",
+        "has_issues": true,
+        "has_projects": true,
+        "has_wiki": true,
+        "has_pages": false,
+        "has_downloads": true,
+        "archived": false,
+        "disabled": false,
+        "open_issues_count": 42,
+        "license": {
+          "key": "mit",
+          "name": "MIT License",
+          "spdx_id": "MIT",
+          "url": "https://api.github.com/licenses/mit",
+          "node_id": "MDc6TGljZW5zZW1pdA=="
+        },
+        "allow_forking": true,
+        "is_template": false,
+        "web_commit_signoff_required": false,
+        "topics": [
+          "code-analysis",
+          "typescript",
+          "ai",
+          "developer-tools",
+          "automation"
+        ],
+        "visibility": "public",
+        "forks": 789,
+        "open_issues": 42,
+        "watchers": 4521,
+        "default_branch": "main"
+      },
+      "score": 1.0,
+      "text_matches": [
+        {
+          "object_url": "https://api.github.com/repos/octocode/advanced-toolkit/contents/src/auth/authentication.ts?ref=main",
+          "object_type": "FileMatch",
+          "property": "content",
+          "fragment": "import { OAuth2Client } from 'google-auth-library';\nimport { GitHubAuthProvider } from './providers/github';\nimport { GoogleAuthProvider } from './providers/google';\nimport { MicrosoftAuthProvider } from './providers/microsoft';\nimport { JWTToken, AuthProvider, UserProfile, AuthConfig } from '../types/auth';\n\n/**\n * Advanced authentication manager with support for multiple OAuth providers\n * and JWT token management with refresh capabilities.\n */\nexport class AuthenticationManager {\n  private providers: Map<string, AuthProvider>;\n  private config: AuthConfig;\n  private refreshTokens: Map<string, string>;\n\n  constructor(config: AuthConfig) {\n    this.config = config;\n    this.providers = new Map();\n    this.refreshTokens = new Map();\n    \n    // Initialize supported authentication providers\n    this.initializeProviders();\n  }\n\n  /**\n   * Initialize all configured authentication providers\n   */\n  private initializeProviders(): void {\n    if (this.config.github?.enabled) {\n      this.providers.set('github', new GitHubAuthProvider(this.config.github));\n    }\n    \n    if (this.config.google?.enabled) {\n      this.providers.set('google', new GoogleAuthProvider(this.config.google));\n    }\n    \n    if (this.config.microsoft?.enabled) {\n      this.providers.set('microsoft', new MicrosoftAuthProvider(this.config.microsoft));\n    }\n  }\n\n  /**\n   * Authenticate user with specified provider\n   * @param provider - Authentication provider name\n   * @param credentials - User credentials or authorization code\n   * @returns Promise<UserProfile> - Authenticated user profile\n   */\n  async authenticate(provider: string, credentials: any): Promise<UserProfile> {\n    const authProvider = this.providers.get(provider);\n    \n    if (!authProvider) {\n      throw new Error(`Authentication provider '${provider}' not found or not enabled`);\n    }\n    \n    try {\n      const userProfile = await authProvider.authenticate(credentials);\n      \n      // Store refresh token if available\n      if (userProfile.refreshToken) {\n        this.refreshTokens.set(userProfile.id, userProfile.refreshToken);\n      }\n      \n      return userProfile;\n    } catch (error) {\n      throw new Error(`Authentication failed for provider '${provider}': ${error.message}`);\n    }\n  }",
+          "matches": [
+            {
+              "text": "authenticate",
+              "indices": [1245, 1257]
+            },
+            {
+              "text": "authentication",
+              "indices": [567, 581]
+            },
+            {
+              "text": "AuthenticationManager",
+              "indices": [789, 810]
+            }
+          ]
+        },
+        {
+          "object_url": "https://api.github.com/repos/octocode/advanced-toolkit/contents/src/auth/authentication.ts?ref=main",
+          "object_type": "FileMatch",
+          "property": "content",
+          "fragment": "  /**\n   * Refresh authentication token\n   * @param userId - User identifier\n   * @returns Promise<JWTToken> - New authentication token\n   */\n  async refreshToken(userId: string): Promise<JWTToken> {\n    const refreshToken = this.refreshTokens.get(userId);\n    \n    if (!refreshToken) {\n      throw new Error(`No refresh token available for user: ${userId}`);\n    }\n    \n    // Find the provider that issued this token\n    for (const [providerName, provider] of this.providers) {\n      try {\n        const newToken = await provider.refreshToken(refreshToken);\n        return newToken;\n      } catch (error) {\n        // Continue to next provider if this one fails\n        continue;\n      }\n    }\n    \n    throw new Error(`Failed to refresh token for user: ${userId}`);\n  }",
+          "matches": [
+            {
+              "text": "refreshToken",
+              "indices": [98, 110]
+            },
+            {
+              "text": "authentication",
+              "indices": [34, 48]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "oauth-manager.js",
+      "path": "lib/auth/oauth-manager.js", 
+      "sha": "a1b2c3d4e5f67890abcdef1234567890fedcba12",
+      "url": "https://api.github.com/repos/awesome-org/oauth-toolkit/contents/lib/auth/oauth-manager.js?ref=master",
+      "git_url": "https://api.github.com/repos/awesome-org/oauth-toolkit/git/blobs/a1b2c3d4e5f67890abcdef1234567890fedcba12",
+      "html_url": "https://github.com/awesome-org/oauth-toolkit/blob/master/lib/auth/oauth-manager.js",
+      "repository": {
+        "id": 234567890,
+        "node_id": "R_kgDON2DYQg",
+        "name": "oauth-toolkit",
+        "full_name": "awesome-org/oauth-toolkit",
+        "private": false,
+        "owner": {
+          "login": "awesome-org",
+          "id": 12345678,
+          "node_id": "MDEyOk9yZ2FuaXphdGlvbjEyMzQ1Njc4",
+          "avatar_url": "https://avatars.githubusercontent.com/u/12345678?s=40&v=4",
+          "type": "Organization",
+          "site_admin": false
+        },
+        "html_url": "https://github.com/awesome-org/oauth-toolkit",
+        "description": "Comprehensive OAuth 2.0 and OpenID Connect toolkit for Node.js applications",
+        "fork": false,
+        "created_at": "2022-08-10T11:30:15Z",
+        "updated_at": "2023-12-14T16:45:30Z",
+        "pushed_at": "2023-12-14T15:20:45Z",
+        "size": 8945,
+        "stargazers_count": 2341,
+        "language": "JavaScript",
+        "forks": 456,
+        "open_issues": 18,
+        "license": {
+          "key": "apache-2.0",
+          "name": "Apache License 2.0",
+          "spdx_id": "Apache-2.0"
+        },
+        "topics": [
+          "oauth",
+          "oauth2",
+          "openid-connect",
+          "authentication",
+          "nodejs",
+          "javascript"
+        ],
+        "default_branch": "master"
+      },
+      "score": 0.85,
+      "text_matches": [
+        {
+          "object_url": "https://api.github.com/repos/awesome-org/oauth-toolkit/contents/lib/auth/oauth-manager.js?ref=master",
+          "object_type": "FileMatch", 
+          "property": "content",
+          "fragment": "const crypto = require('crypto');\nconst axios = require('axios');\nconst jwt = require('jsonwebtoken');\n\n/**\n * OAuth 2.0 Manager for handling various authentication flows\n * Supports Authorization Code, Client Credentials, and PKCE flows\n */\nclass OAuthManager {\n  constructor(config) {\n    this.config = config;\n    this.tokenCache = new Map();\n    this.refreshTokens = new Map();\n    \n    // Validate required configuration\n    this.validateConfig();\n  }\n  \n  /**\n   * Validate OAuth configuration\n   */\n  validateConfig() {\n    const required = ['clientId', 'clientSecret', 'redirectUri', 'authorizationEndpoint', 'tokenEndpoint'];\n    \n    for (const field of required) {\n      if (!this.config[field]) {\n        throw new Error(`Missing required OAuth configuration: ${field}`);\n      }\n    }\n  }",
+          "matches": [
+            {
+              "text": "OAuth",
+              "indices": [156, 161]
+            },
+            {
+              "text": "authentication",
+              "indices": [203, 217]
+            },
+            {
+              "text": "OAuthManager",
+              "indices": [268, 280]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "user-auth.py",
+      "path": "auth/user-auth.py",
+      "sha": "9f8e7d6c5b4a39281706f5e4d3c2b1a0987654321",
+      "url": "https://api.github.com/repos/python-auth/flask-auth-system/contents/auth/user-auth.py?ref=main",
+      "git_url": "https://api.github.com/repos/python-auth/flask-auth-system/git/blobs/9f8e7d6c5b4a39281706f5e4d3c2b1a0987654321",
+      "html_url": "https://github.com/python-auth/flask-auth-system/blob/main/auth/user-auth.py",
+      "repository": {
+        "id": 345678901,
+        "name": "flask-auth-system",
+        "full_name": "python-auth/flask-auth-system",
+        "private": false,
+        "owner": {
+          "login": "python-auth",
+          "id": 87654321,
+          "type": "Organization"
+        },
+        "description": "Complete Flask authentication system with JWT, OAuth, and session management",
+        "language": "Python",
+        "stargazers_count": 1876,
+        "forks": 312,
+        "topics": [
+          "flask",
+          "python",
+          "authentication",
+          "jwt",
+          "oauth",
+          "sessions"
+        ]
+      },
+      "score": 0.72,
+      "text_matches": [
+        {
+          "object_type": "FileMatch",
+          "property": "content",
+          "fragment": "import hashlib\nimport jwt\nimport bcrypt\nfrom datetime import datetime, timedelta\nfrom flask import current_app, request, jsonify\nfrom werkzeug.security import generate_password_hash, check_password_hash\n\nclass UserAuthentication:\n    \"\"\"Advanced user authentication system with multiple security layers\"\"\"\n    \n    def __init__(self, app=None):\n        self.app = app\n        self.failed_attempts = {}\n        self.blocked_ips = set()\n        \n        if app:\n            self.init_app(app)\n    \n    def authenticate_user(self, username, password, ip_address=None):\n        \"\"\"Authenticate user with rate limiting and security checks\"\"\"\n        \n        # Check for blocked IP\n        if ip_address and ip_address in self.blocked_ips:\n            return {'success': False, 'error': 'IP address blocked'}\n        \n        # Rate limiting check\n        if self._is_rate_limited(username, ip_address):\n            return {'success': False, 'error': 'Too many failed attempts'}\n        \n        # Validate credentials\n        user = self._validate_credentials(username, password)\n        \n        if user:\n            # Clear failed attempts on successful login\n            self._clear_failed_attempts(username, ip_address)\n            \n            # Generate JWT token\n            token = self._generate_jwt_token(user)\n            \n            return {\n                'success': True,\n                'user': user,\n                'token': token,\n                'expires_at': datetime.utcnow() + timedelta(hours=24)\n            }\n        else:\n            # Track failed attempt\n            self._track_failed_attempt(username, ip_address)\n            \n            return {'success': False, 'error': 'Invalid credentials'}",
+          "matches": [
+            {
+              "text": "authenticate",
+              "indices": [445, 457]
+            },
+            {
+              "text": "authentication",
+              "indices": [287, 301]
+            },
+            {
+              "text": "UserAuthentication",
+              "indices": [268, 286]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "search_metadata": {
+    "query": "authenticate user language:typescript language:javascript language:python",
+    "sort": "indexed",
+    "order": "desc",
+    "total_results": 7892,
+    "search_time_ms": 156.78,
+    "page": 1,
+    "per_page": 30
+  },
+  "rate_limit": {
+    "limit": 5000,
+    "remaining": 4987,
+    "reset": 1702651200,
+    "used": 13,
+    "resource": "code_search"
+  }
+}

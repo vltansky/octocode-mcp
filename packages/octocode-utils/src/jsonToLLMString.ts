@@ -25,6 +25,30 @@ export function jsonToLLMString(
   // Initialize visited set for circular reference detection
   if (visited === null) {
     visited = new Set();
+
+    // Handle JSON string parsing at the beginning (only at root level)
+    if (typeof data === 'string') {
+      try {
+        const parsed = JSON.parse(data);
+        // If successfully parsed, use parsed data and add transformation indicator
+        const result = jsonToLLMString(
+          parsed,
+          indentation,
+          maxDepth,
+          new Set(),
+          parentKey,
+          maxLength,
+          maxArrayItems
+        );
+        return `[Transformed from JSON]\n${result}`;
+      } catch {
+        // If parsing fails, treat as regular string with truncation logic
+        if (data.length > maxLength) {
+          return data.substring(0, maxLength) + '... [truncated]';
+        }
+        return data;
+      }
+    }
   }
 
   // Prevent infinite recursion
@@ -195,7 +219,7 @@ export function jsonToLLMString(
       );
 
       if (isSimpleArray) {
-        // Simple arrays: natural comma-separated list without brackets
+        // Simple arrays: LIST format with comma-separated items
         const result = displayItems
           .map(item => {
             if (typeof item === 'string') return item;
@@ -205,9 +229,11 @@ export function jsonToLLMString(
           .join(', ');
 
         // Add truncation notice if needed
-        return hasMore
+        const listContent = hasMore
           ? `${result}... [${data.length - maxArrayItems} more items]`
           : result;
+
+        return `LIST: ${listContent}`;
       } else {
         // Arrays of objects: use numbered items or natural flow
         const result = displayItems

@@ -34,14 +34,14 @@ describe('jsonToLLMString', () => {
     });
 
     it('should handle simple arrays', () => {
-      expect(jsonToLLMString([1, 2, 3])).toBe('1, 2, 3');
-      expect(jsonToLLMString(['a', 'b', 'c'])).toBe('a, b, c');
-      expect(jsonToLLMString([true, false, null])).toBe('yes, no, null');
+      expect(jsonToLLMString([1, 2, 3])).toBe('LIST: 1, 2, 3');
+      expect(jsonToLLMString(['a', 'b', 'c'])).toBe('LIST: a, b, c');
+      expect(jsonToLLMString([true, false, null])).toBe('LIST: yes, no, null');
     });
 
     it('should handle mixed primitive arrays', () => {
       expect(jsonToLLMString([1, 'hello', true, null])).toBe(
-        '1, hello, yes, null'
+        'LIST: 1, hello, yes, null'
       );
     });
 
@@ -64,8 +64,8 @@ Item 2:
         [1, 2],
         [3, 4],
       ];
-      const expected = `Item 1: 1, 2
-Item 2: 3, 4`;
+      const expected = `Item 1: LIST: 1, 2
+Item 2: LIST: 3, 4`;
       expect(jsonToLLMString(input)).toBe(expected);
     });
   });
@@ -185,7 +185,7 @@ Phone: undefined`;
       const result = jsonToLLMString(input);
       expect(result).toContain('Users:');
       expect(result).toContain('Settings:');
-      expect(result).toContain('Roles: admin, user');
+      expect(result).toContain('Roles: LIST: admin, user');
       expect(result).toContain('Theme: dark');
       expect(result).toContain('Notifications: yes');
     });
@@ -198,7 +198,7 @@ Phone: undefined`;
       expect(result).toContain('Item 2: 42');
       expect(result).toContain('Item');
       expect(result).toContain('Name: object');
-      expect(result).toContain('1, 2, 3');
+      expect(result).toContain('LIST: 1, 2, 3');
       expect(result).toContain('none');
       expect(result).toContain('yes');
     });
@@ -248,13 +248,13 @@ Phone: undefined`;
       expect(result).toContain('File: /file.txt');
       expect(result).toContain('Size: 1024');
       expect(result).toContain('Contents: content');
-      expect(result).toContain('Items: a, b');
+      expect(result).toContain('Items: LIST: a, b');
       expect(result).toContain('Type: file');
       expect(result).toContain('Name: test');
       expect(result).toContain('Value: 42');
       expect(result).toContain('Content: text');
       expect(result).toContain('Description: A test file');
-      expect(result).toContain('Subitems: child1, child2');
+      expect(result).toContain('Subitems: LIST: child1, child2');
     });
 
     it('should use GitHub-specific semantic labels', () => {
@@ -288,7 +288,7 @@ Phone: undefined`;
       expect(result).toContain('Stars: 100');
       expect(result).toContain('Forks: 50');
       expect(result).toContain('Language: TypeScript');
-      expect(result).toContain('Topics: web, api');
+      expect(result).toContain('Topics: LIST: web, api');
       expect(result).toContain('License: MIT');
     });
 
@@ -314,11 +314,11 @@ Phone: undefined`;
       expect(result).toContain('Dev Dependencies:');
       expect(result).toContain('Scripts:');
       expect(result).toContain('Engines:');
-      expect(result).toContain('Keywords: test, utility');
+      expect(result).toContain('Keywords: LIST: test, utility');
       expect(result).toContain('Homepage: https://example.com');
       expect(result).toContain('Repository: github:user/repo');
       expect(result).toContain('Bugs: https://github.com/user/repo/issues');
-      expect(result).toContain('Maintainers: John Doe');
+      expect(result).toContain('Maintainers: LIST: John Doe');
     });
 
     it('should capitalize unknown keys', () => {
@@ -326,6 +326,61 @@ Phone: undefined`;
       const result = jsonToLLMString(input);
       expect(result).toContain('CustomKey: value');
       expect(result).toContain('AnotherKey: 123');
+    });
+  });
+
+  describe('JSON String Parsing', () => {
+    it('should parse JSON strings and add transformation indicator', () => {
+      const jsonString = '{"name": "test", "values": [1, 2, 3]}';
+      const result = jsonToLLMString(jsonString);
+
+      expect(result).toContain('[Transformed from JSON]');
+      expect(result).toContain('Name: test');
+      expect(result).toContain('Values: LIST: 1, 2, 3');
+    });
+
+    it('should handle array JSON strings', () => {
+      const jsonString = '["apple", "banana", "cherry"]';
+      const result = jsonToLLMString(jsonString);
+
+      expect(result).toBe(
+        '[Transformed from JSON]\nLIST: apple, banana, cherry'
+      );
+    });
+
+    it('should handle nested JSON objects', () => {
+      const jsonString =
+        '{"user": {"name": "John", "tags": ["admin", "user"]}}';
+      const result = jsonToLLMString(jsonString);
+
+      expect(result).toContain('[Transformed from JSON]');
+      expect(result).toContain('User:');
+      expect(result).toContain('Name: John');
+      expect(result).toContain('Tags: LIST: admin, user');
+    });
+
+    it('should treat invalid JSON strings as regular strings', () => {
+      const invalidJson = '{"invalid": json}';
+      const result = jsonToLLMString(invalidJson);
+
+      expect(result).toBe('{"invalid": json}');
+      expect(result).not.toContain('[Transformed from JSON]');
+    });
+
+    it('should treat regular strings as strings without parsing', () => {
+      const regularString = 'This is just a regular string';
+      const result = jsonToLLMString(regularString);
+
+      expect(result).toBe('This is just a regular string');
+      expect(result).not.toContain('[Transformed from JSON]');
+    });
+
+    it('should preserve strings with quotes', () => {
+      const stringWithQuotes = 'Hello "world" with quotes';
+      const result = jsonToLLMString(stringWithQuotes);
+
+      expect(result).toBe('Hello "world" with quotes');
+      expect(result).not.toContain('[Transformed from JSON]');
     });
   });
 

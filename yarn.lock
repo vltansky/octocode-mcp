@@ -402,6 +402,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@microsoft/tiktokenizer@npm:^1.0.10":
+  version: 1.0.10
+  resolution: "@microsoft/tiktokenizer@npm:1.0.10"
+  checksum: 10c0/d5561ff3b9483177632e02a2dc30a990f50f3f29946bafd17ffbf556618644ff02a89c79ae8821d94126ca980fa3d7466b860a49fae421ef3e096ba5e36289d6
+  languageName: node
+  linkType: hard
+
 "@modelcontextprotocol/sdk@npm:^1.16.0":
   version: 1.17.1
   resolution: "@modelcontextprotocol/sdk@npm:1.17.1"
@@ -3821,6 +3828,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "octocode-utils@workspace:packages/octocode-utils"
   dependencies:
+    "@microsoft/tiktokenizer": "npm:^1.0.10"
     "@rollup/plugin-node-resolve": "npm:^16.0.1"
     "@rollup/plugin-typescript": "npm:^12.1.2"
     "@types/clean-css": "npm:^4.2.11"

@@ -1,0 +1,271 @@
+{
+  "_comment": "📦 NPM Package Information Example",
+  "_description": "This file contains a comprehensive NPM package.json response that tests jsonToLLMString with: (1) Complex dependencies and devDependencies objects, (2) Scripts object with numerous build/test commands, (3) Contributor arrays with nested objects, (4) Export maps with conditional exports, (5) Funding arrays with multiple platforms, (6) Keywords arrays for SEO, (7) Maintenance metadata and distribution info. This represents a real-world enterprise NPM package configuration.",
+  "_test_cases": "Tests object flattening (dependencies), array handling (contributors->LIST), semantic labeling (name->Name), and nested export configurations",
+  "name": "@octocode/advanced-toolkit",
+  "version": "3.14.159",
+  "description": "A comprehensive toolkit for advanced code analysis, transformation, and optimization with AI-powered features",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "src/**/*",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "examples/**/*"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./analyzer": {
+      "import": "./dist/analyzer.esm.js",
+      "require": "./dist/analyzer.js",
+      "types": "./dist/analyzer.d.ts"
+    },
+    "./transformer": {
+      "import": "./dist/transformer.esm.js",
+      "require": "./dist/transformer.js",
+      "types": "./dist/transformer.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils.esm.js",
+      "require": "./dist/utils.js",
+      "types": "./dist/utils.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "rollup -c rollup.config.js && npm run build:types",
+    "build:dev": "rollup -c rollup.config.js --watch",
+    "build:types": "tsc --emitDeclarationOnly --declaration --declarationMap",
+    "build:docs": "typedoc --out docs src/index.ts",
+    "test": "vitest run --coverage --reporter=verbose",
+    "test:watch": "vitest --watch --ui",
+    "test:e2e": "playwright test",
+    "test:integration": "vitest run tests/integration --reporter=verbose",
+    "lint": "eslint src/**/*.{ts,tsx,js,jsx} --fix",
+    "lint:check": "eslint src/**/*.{ts,tsx,js,jsx}",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist coverage .nyc_output",
+    "prepare": "husky install && npm run build",
+    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "release": "semantic-release",
+    "benchmark": "node benchmarks/run.js",
+    "analyze": "npm run build && npx bundle-analyzer dist/index.js",
+    "dev": "concurrently \"npm run build:dev\" \"npm run test:watch\"",
+    "start": "node dist/index.js",
+    "demo": "node examples/demo.js"
+  },
+  "dependencies": {
+    "@babel/core": "^7.23.6",
+    "@babel/parser": "^7.23.6",
+    "@babel/traverse": "^7.23.6",
+    "@babel/types": "^7.23.6",
+    "@octokit/core": "^5.1.0",
+    "@octokit/rest": "^20.0.2",
+    "axios": "^1.6.2",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "cosmiconfig": "^8.3.6",
+    "debug": "^4.3.4",
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^11.2.0",
+    "joi": "^17.11.0",
+    "lodash": "^4.17.21",
+    "magic-string": "^0.30.5",
+    "minimatch": "^9.0.3",
+    "node-fetch": "^3.3.2",
+    "ora": "^7.0.1",
+    "picocolors": "^1.0.0",
+    "semver": "^7.5.4",
+    "typescript": "^5.3.3",
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@types/babel__core": "^7.20.5",
+    "@types/babel__traverse": "^7.20.4",
+    "@types/debug": "^4.1.12",
+    "@types/fs-extra": "^11.0.4",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20.10.5",
+    "@types/semver": "^7.5.6",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "@vitest/coverage-v8": "^1.1.0",
+    "@vitest/ui": "^1.1.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-prettier": "^5.1.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "playwright": "^1.40.1",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.1",
+    "rollup-plugin-dts": "^6.1.0",
+    "semantic-release": "^22.0.12",
+    "tslib": "^2.6.2",
+    "typedoc": "^0.25.4",
+    "vitest": "^1.1.0"
+  },
+  "peerDependencies": {
+    "node": ">=16.0.0",
+    "typescript": ">=4.8.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "keywords": [
+    "code-analysis",
+    "ast",
+    "babel",
+    "typescript",
+    "transformation",
+    "optimization",
+    "ai",
+    "llm",
+    "automation",
+    "developer-tools",
+    "static-analysis",
+    "refactoring",
+    "linting",
+    "formatting",
+    "parsing"
+  ],
+  "author": {
+    "name": "The Octocode Team",
+    "email": "team@octocode.dev",
+    "url": "https://octocode.dev"
+  },
+  "contributors": [
+    {
+      "name": "Alice Johnson",
+      "email": "alice@octocode.dev",
+      "url": "https://github.com/alice-codes"
+    },
+    {
+      "name": "Bob Smith",
+      "email": "bob@octocode.dev",
+      "url": "https://github.com/bob-builds"
+    },
+    {
+      "name": "Carol Williams",
+      "email": "carol@octocode.dev",
+      "url": "https://github.com/carol-creates"
+    }
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/octocode/advanced-toolkit#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/octocode/advanced-toolkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/octocode/advanced-toolkit/issues",
+    "email": "bugs@octocode.dev"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/octocode"
+    },
+    {
+      "type": "opencollective",
+      "url": "https://opencollective.com/octocode"
+    },
+    {
+      "type": "patreon",
+      "url": "https://patreon.com/octocode"
+    }
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "browserslist": [
+    "defaults",
+    "not ie 11",
+    "not op_mini all"
+  ],
+  "volta": {
+    "node": "20.10.0",
+    "npm": "10.2.3"
+  },
+  "packageManager": "npm@10.2.3",
+  "dist": {
+    "shasum": "a1b2c3d4e5f6789abcdef1234567890fedcba987",
+    "integrity": "sha512-abc123def456ghi789jklmno012pqr345stu678vwx901yz234abc567def890ghi123jkl456mno789==",
+    "tarball": "https://registry.npmjs.org/@octocode/advanced-toolkit/-/advanced-toolkit-3.14.159.tgz",
+    "fileCount": 247,
+    "unpackedSize": 1847293
+  },
+  "gitHead": "f7e8d9c0b1a2e3f4567890abcdef123456789012",
+  "_id": "@octocode/advanced-toolkit@3.14.159",
+  "_nodeVersion": "20.10.0",
+  "_npmVersion": "10.2.3",
+  "_npmUser": {
+    "name": "octocode-publisher",
+    "email": "publisher@octocode.dev"
+  },
+  "maintainers": [
+    {
+      "name": "alice-codes",
+      "email": "alice@octocode.dev"
+    },
+    {
+      "name": "bob-builds", 
+      "email": "bob@octocode.dev"
+    }
+  ],
+  "_shasum": "a1b2c3d4e5f6789abcdef1234567890fedcba987",
+  "_resolved": "https://registry.npmjs.org/@octocode/advanced-toolkit/-/advanced-toolkit-3.14.159.tgz",
+  "_integrity": "sha512-abc123def456ghi789jklmno012pqr345stu678vwx901yz234abc567def890ghi123jkl456mno789==",
+  "_from": "@octocode/advanced-toolkit@^3.14.0"
+}

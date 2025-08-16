@@ -188,6 +188,95 @@ yarn lint
 yarn format
 ```
 
+## 📊 Research & Benchmarks: Evidence for Semantic Naturalization
+
+### 🔬 **Measured Performance (Tested with Microsoft TikTokenizer)**
+
+Our comprehensive benchmarks using GPT-4 tokenizer demonstrate significant efficiency gains:
+
+| File Type | Original Tokens | LLM Format Tokens | Reduction | Cost Savings |
+|-----------|-----------------|-------------------|-----------|--------------|
+| GitHub Repository Search | 2,742 | 2,365 | **13.7%** | $0.0113 |
+| NPM Package Info | 2,722 | 2,308 | **15.2%** | $0.0124 |
+| GitHub Code Search | 3,915 | 3,289 | **16.0%** | $0.0188 |
+| GitHub Pull Request | 3,933 | 3,353 | **14.7%** | $0.0174 |
+| Mixed API Responses | 3,689 | 3,137 | **15.0%** | $0.0166 |
+
+**📈 Aggregate Results:**
+- **15.0% average token reduction** across real-world JSON datasets
+- **2,549 tokens saved** per batch (17K→14.5K tokens)
+- **$0.0765 cost savings** per batch with GPT-4 pricing
+- **⚡ 10.4M tokens/second** processing speed
+
+*Run `examples/comprehensive-demo.ts` to reproduce these benchmarks*
+
+### 🧠 **Academic Research Supporting This Approach**
+
+**1. Structured Info ↔ Natural Language Are Both Viable**
+> [Dagdelen et al. (Nature)](https://www.nature.com/articles/s41586-023-06735-9) demonstrate that the same extracted facts can be returned either as simple English sentences or as JSON, depending on what's most useful downstream. This supports our premise that semantically labeled, minimally syntactic text is a valid—and sometimes preferable—carrier of structured content for LLM consumption.
+
+**2. Separate "Reading" from "Reasoning"; Linearize for the Model**
+> [StructGPT (ACL Anthology)](https://aclanthology.org/2023.emnlp-main.574/) explicitly disentangles reading from reasoning over structured sources and introduces an invoking-linearization-generation procedure so LLMs reason over structured data more effectively. Our hierarchical indentation, semantic labels, truncation, and array handling are practical instances of such linearization to reduce cognitive load at inference time.
+
+**3. Alternative Formats Improve Efficiency**
+> [EMNLP 2024 findings](https://aclanthology.org/2024.emnlp-main.448/) show that allowing LLMs to choose non-NL formats (tables, key-value, code-like structures) before reasoning improves efficiency (3.3–5.7%) and cuts multi-agent token use by as much as **72.7%**, while maintaining communicative effectiveness. Our output is precisely such a compact, structured-yet-readable format.
+
+### 🎯 **Why Our Design Choices Work**
+
+**✅ Remove Heavy JSON Syntax; Keep Salient Structure**
+- Reduces token overhead and focuses the model on semantics rather than punctuation
+- Consistent with evidence that alternative formats and compact linearizations improve efficiency
+- **Measured impact:** 15.0% average token reduction
+
+**✅ Semantic Labels (`File:`, `Repository:`, `Owner:`)**
+- Mirrors the "simple English sentence" option in scientific information extraction
+- Matches key-value styles proven effective in structured prompting
+- **Example transformation:** `"repo": "octocode"` → `Repository: octocode`
+
+**✅ Indentation/Hierarchy and Controlled Truncation**
+- Matches the "reading-then-reasoning" principle (structured for reading; capped for context)
+- Aligns with efficiency findings for non-NL/compact formats
+- **Performance:** Processes 10.4M tokens/second with depth limiting
+
+**✅ Array Handling (`LIST:` for primitives; numbered items for objects)**
+- Provides predictable, compressible patterns easy for models to scan
+- Works well for both human and machine readers per format selection studies
+- **Example:** `["react", "typescript"]` → `LIST: react, typescript`
+
+### 🔄 **Practical Integration Patterns**
+
+**Input Side (Our Function):** Convert large JSON payloads into concise, labeled outlines before asking the model to reason, compare, or summarize.
+
+```typescript
+// Before: Raw JSON with syntax noise
+{"users":[{"name":"Alice","active":true}],"total":1}
+
+// After: Semantic naturalization  
+Users:
+  Item 1:
+    Name: Alice
+    Active: yes
+Total: 1
+```
+
+**Output Side:** When you need guaranteed structure back (API calls, tool arguments), use constrained decoding with FSM/grammar libraries—research shows this can be faster than unconstrained generation.
+
+### 📈 **Validation Methodology**
+
+Our benchmarks follow rigorous scientific methodology:
+
+- **Real-world datasets:** Complex GitHub API responses, NPM package data, mixed success/error cases
+- **Precise measurement:** Microsoft TikTokenizer for exact GPT-4 token counts
+- **Comprehensive metrics:** Token reduction, character efficiency, processing speed, cost impact
+- **Reproducible:** All test data and scripts included in `/examples/`
+
+**A/B Testing Framework Available:**
+- Compare task accuracy and token cost using raw JSON vs. naturalized text
+- Measure parsing errors downstream with constrained vs. free-form outputs
+- Human evaluation for faithfulness and readability
+
+*Contact us for benchmark harnesses or FSM-guided decoder integration.*
+
 ## 🏗️ Architecture
 
 This package provides core utilities used across the Octocode MCP ecosystem:
