@@ -435,7 +435,9 @@ arr
       const result = jsonToLLMString(deep);
       expect(result).toContain('g "deep"');
       // Single-property objects now use proper line breaks and indentation
-      expect(result).toContain('a\n  b\n    c\n      d\n        e\n          f\n            g "deep"');
+      expect(result).toContain(
+        'a\n  b\n    c\n      d\n        e\n          f\n            g "deep"'
+      );
     });
 
     it('handles single-character strings', () => {
