@@ -151,6 +151,26 @@ Follow the MCP install [guide](https://modelcontextprotocol.io/quickstart/user),
 </details>
 
 <details>
+<summary>Cline</summary>
+
+Add via the Cline VS Code extension settings or by updating your `cline_mcp_settings.json` file:
+
+```json
+{
+  "mcpServers": {
+    "octocode": {
+      "command": "npx",
+      "args": [
+        "octocode-mcp@latest"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
 <summary>Codex</summary>
 
 Use the Codex CLI to add the Octocode MCP server:
@@ -192,26 +212,6 @@ Create `.cursor/mcp.json` in your project root:
     "octocode": {
       "command": "npx",
       "args": ["octocode-mcp@latest"]
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary>Cline</summary>
-
-Add via the Cline VS Code extension settings or by updating your `cline_mcp_settings.json` file:
-
-```json
-{
-  "mcpServers": {
-    "octocode": {
-      "command": "npx",
-      "args": [
-        "octocode-mcp@latest"
-      ]
     }
   }
 }
