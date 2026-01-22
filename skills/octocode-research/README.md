@@ -62,6 +62,12 @@ https://github.com/user-attachments/assets/d1260dbc-e7b6-4bec-909f-232ebee91ce9
 > **Important**: Make sure you are authenticated with GitHub!
 > Run `npx octocode-cli` → **Manage Auth** to sign in.
 
+### Option2: Install skill
+
+```bash
+npx skills i bgauryy/octocode-mcp/skills/octocode-research
+```
+
 ### Option 2: Manual Setup
 
 ```bash
